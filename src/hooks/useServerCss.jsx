@@ -19,7 +19,7 @@ export default function useServerCss(cssString, opts = {}) {
     if (!cssString) return;
 
     // 1) знайти першу назву класу у cssString (сервер гарантує що є)
-    const classMatch = cssString.match(/\.([a-zA-Z0-9_-]+)(?=[\s\.\:#,{[])/);
+    const classMatch = cssString.match(/\.([a-zA-Z0-9_-]+)(?=[\s.:#,{[])/);
     const extractedClass = classMatch ? classMatch[1] : null;
 
     // 2) вставити/оновити <style>

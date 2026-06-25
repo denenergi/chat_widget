@@ -2,11 +2,10 @@ import React, { useCallback, useEffect, useState, useRef } from "react";
 import "../App.scss";
 import {
   MESSAGES_TYPES,
-  LIGHT_COLOR_VALUE,
   MEDIA_FILE_TYPES,
 } from "../const/const";
 import { widgetColorStyle } from "../utils/utils";
-import { getTintedColor, openFile, getFileName } from "../utils/utils";
+import { openFile, getFileName } from "../utils/utils";
 import { StorageService } from "../service/token/storage.service";
 import ChatMessageFileIcon from "./svg/ChatMessageFileIcon";
 
@@ -47,7 +46,7 @@ const MessageItem = ({
         setOpenImage(imageUrl);
       }
     },
-    [isMobile, onOpenImageModal]
+    [isMobile, onOpenImageModal, setOpenImage]
   );
 
   useEffect(() => {
@@ -369,7 +368,17 @@ const MessageItem = ({
         );
       }
     },
-    [fontColor, onClickImageHandler, displayText]
+    [
+      fontColor,
+      onClickImageHandler,
+      displayText,
+      browserLanguage,
+      chatManager,
+      color,
+      loadingBeforeMessages,
+      replyingMEssages,
+      widgetOptions.widgetTextLanguage,
+    ]
   );
 
   const displayMessage = { ...message, text: displayText };
