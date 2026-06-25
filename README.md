@@ -12,7 +12,7 @@ npm start
 
 Відкрий [http://localhost:3000](http://localhost:3000)
 
-> Рекомендовано **Node.js 20+** (див. `.nvmrc`). Стилі збираються через `sass` (dart-sass).
+> Рекомендовано **Node.js 24** (див. `.nvmrc`). Стилі збираються через `sass` (dart-sass).
 
 ## Змінні середовища
 
@@ -67,7 +67,7 @@ REACT_APP_BASE_DOMAIN_URL=https://ТВІЙ-ПРОЕКТ.vercel.app
 1. [netlify.com](https://netlify.com) → Import from Git
 2. Build command: `npm run build`
 3. Publish directory: `build`
-4. Node version: **20** (Site settings → Environment → `NODE_VERSION=20`)
+4. Node version: **24** (Site settings → Environment → `NODE_VERSION=24`)
 5. Ті самі `REACT_APP_*` змінні
 
 ## Збірка
