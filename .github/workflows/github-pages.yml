@@ -38,7 +38,9 @@ jobs:
         run: npm install
 
       - name: Build
-        run: cross-env PUBLIC_URL=/chat_widget npm run build
+        run: npm run build
+        env:
+          PUBLIC_URL: /chat_widget
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
