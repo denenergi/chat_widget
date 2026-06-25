@@ -14,7 +14,7 @@
     "emoji-picker-react": "^3.4.12",
     "emoji-picker-textfield": "^0.2.1",
     "flag-icons": "^6.2.0",
-    "sass": "^1.77.0",
+    "gif-picker-react": "^2.0.0",
     "react": "^17.0.2",
     "react-addons-css-transition-group": "^15.6.2",
     "react-app-rewire-disable-chunks": "^0.0.1",
@@ -26,6 +26,7 @@
     "react-textarea-emoji": "^1.0.21",
     "react-transition-group": "^4.4.5",
     "react-use-websocket": "^2.9.1",
+    "sass": "^1.77.0",
     "use-sound": "^4.0.1",
     "web-vitals": "^1.1.2"
   },

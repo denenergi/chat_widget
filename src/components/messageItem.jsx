@@ -4,6 +4,7 @@ import {
   MESSAGES_TYPES,
   MEDIA_FILE_TYPES,
 } from "../const/const";
+import { extractGifUrl } from "../utils/gifMessage";
 import { widgetColorStyle } from "../utils/utils";
 import { openFile, getFileName } from "../utils/utils";
 import { StorageService } from "../service/token/storage.service";
@@ -119,6 +120,39 @@ const MessageItem = ({
             </p>
           </>
         );
+      } else if (extractGifUrl(item)) {
+        const gifUrl = extractGifUrl(item);
+        const gifAlt = item.gif?.description || "GIF";
+
+        return (
+          <>
+            <img
+              onClick={() => onClickImageHandler(gifUrl)}
+              src={gifUrl}
+              className="jedidesk-chat__mesages-area-item-image jedidesk-chat__mesages-area-item-gif"
+              alt={gifAlt}
+            />
+            <div
+              className={`jedidesk-chat__mesages-area-item-time-container jedidesk-chat__mesages-area-item-time-image ${
+                item.status === "edited"
+                  ? "edited-message-bottom-container"
+                  : ""
+              }`}
+            >
+              {item.status === "edited" && (
+                <p className="edited-message-inform-text">
+                  {
+                    widgetOptions.widgetTextLanguage[browserLanguage]
+                      .editedMessage
+                  }
+                </p>
+              )}
+              <div className="jedidesk-chat__mesages-area-item-time-container-text">
+                {item.time.split(" ").pop()}
+              </div>
+            </div>
+          </>
+        );
       } else if (
         item.text !== null &&
         (item.media === null || item.media === "") &&
@@ -231,7 +265,10 @@ const MessageItem = ({
             </div>
           </>
         );
-      } else if (item.media_type === MEDIA_FILE_TYPES.image) {
+      } else if (
+        item.media_type === MEDIA_FILE_TYPES.image ||
+        item.media_type === MEDIA_FILE_TYPES.gif
+      ) {
         return (
           <>
             <img

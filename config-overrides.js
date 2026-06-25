@@ -1,48 +1,106 @@
-// const path = require("path");
-// const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-// const glob = require("glob");
-
-// module.exports = {
-//   entry: {
-//     "bundle.js": glob
-//       .sync("build/static/?(js|css)/main.*.?(js|css)")
-//       .map((f) => path.resolve(__dirname, f)),
-//   },
-//   // output: {
-//   //   filename: "build/static/js/bundle.min.js",
-//   //   asyncChunks: false,
-//   //   clean: true,
-//   // },
-//   module: {
-//     rules: [
-//       {
-//         test: /\.css$/,
-//         use: ["style-loader", "css-loader"],
-//       },
-//     ],
-//   },
-//   plugins: [
-//     new UglifyJsPlugin(),
-//     isEnvProduction &&
-//       new webpack.optimize.LimitChunkCountPlugin({
-//         maxChunks: 1,
-//       }),
-//   ],
-// };
-
-// module.exports = function override(config, env) {
-//   config.output = {
-//     ...config.output, // copy all settings
-//     filename: "static/js/[name].js",
-//     chunkFilename: "static/js/[name].chunk.js",
-//   };
-//   return config;
-// };
+const path = require("path");
+const webpack = require("webpack");
 
 module.exports = function override(config, env) {
-  //do stuff with the webpack config...
   if (!config.plugins) {
     config.plugins = [];
+  }
+
+  const emptyModulePath = path.resolve(__dirname, "src/utils/emptyModule.js");
+  const gifPickerStylePath = path.resolve(
+    __dirname,
+    "node_modules/gif-picker-react/dist/style.css"
+  );
+
+  config.plugins.push(
+    new webpack.NormalModuleReplacementPlugin(
+      /^\.\/style\.css$/,
+      function (resource) {
+        if (resource.context && resource.context.includes("gif-picker-react")) {
+          resource.request = emptyModulePath;
+        }
+      }
+    )
+  );
+
+  const stripLoaderPath = path.resolve(
+    __dirname,
+    "config/gifPickerCjsStripLoader.js"
+  );
+
+  // gif-picker-react v2: use prebuilt .cjs (correct React interop). Only transpile ?. for webpack 4.
+  config.resolve.mainFields = ["browser", "main", "module"];
+  config.resolve.alias = {
+    ...(config.resolve.alias || {}),
+    [gifPickerStylePath]: emptyModulePath,
+    "gif-picker-react$": path.resolve(
+      __dirname,
+      "node_modules/gif-picker-react/dist/index.cjs"
+    ),
+    "gif-picker-react/providers/giphy": path.resolve(
+      __dirname,
+      "node_modules/gif-picker-react/dist/providers/giphy/index.cjs"
+    ),
+    "gif-picker-react/providers/klipy": path.resolve(
+      __dirname,
+      "node_modules/gif-picker-react/dist/providers/klipy/index.cjs"
+    ),
+  };
+
+  const gifPickerPath = path.resolve(__dirname, "node_modules/gif-picker-react");
+  const oneOfRule = config.module.rules.find((rule) => rule.oneOf)?.oneOf;
+  if (oneOfRule) {
+    oneOfRule.unshift({
+      test: /\.cjs$/,
+      include: gifPickerPath,
+      type: "javascript/auto",
+      parser: {
+        harmony: false,
+        commonjs: true,
+      },
+      use: [
+        {
+          loader: require.resolve("babel-loader"),
+          options: {
+            babelrc: false,
+            configFile: false,
+            compact: false,
+            presets: [
+              [
+                require.resolve("@babel/preset-env"),
+                {
+                  modules: false,
+                  exclude: ["transform-typeof-symbol"],
+                },
+              ],
+            ],
+            plugins: [
+              require.resolve("@babel/plugin-proposal-optional-chaining"),
+              require.resolve(
+                "@babel/plugin-proposal-nullish-coalescing-operator"
+              ),
+            ],
+            cacheDirectory: true,
+            cacheCompression: false,
+          },
+        },
+        stripLoaderPath,
+      ],
+    });
+
+    oneOfRule.forEach((rule) => {
+      if (
+        rule.loader &&
+        String(rule.loader).includes("babel-loader") &&
+        rule.test &&
+        String(rule.test) === "/\\.(js|mjs)$/"
+      ) {
+        rule.exclude = [rule.exclude, gifPickerPath].filter(Boolean);
+      }
+      if (rule.loader && String(rule.loader).includes("file-loader")) {
+        rule.exclude = [/\.(js|mjs|cjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/];
+      }
+    });
   }
 
   config.optimization.splitChunks = {

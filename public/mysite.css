@@ -17,12 +17,11 @@
 
 @font-face {
   font-family: "Inter";
-  src: url("./fonts/Inter-Regular.woff2");
-}
-
-@font-face {
-  font-family: "Inter";
-  src: url("./fonts/Inter-Regular.woff");
+  src: url("./fonts/Inter-Regular.woff2") format("woff2"),
+    url("./fonts/Inter-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 @media (max-width: 750px) {
@@ -84,6 +83,8 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
 }
 
 .frame__chat-container-wrapper {
@@ -2111,9 +2112,20 @@ ul {
   position: relative;
   width: 340px;
   margin-left: 10px;
+  z-index: 2;
 }
 
-.emoji-icon {
+.picker-container .GifPickerReact {
+  --gpr-bg-color: #fff;
+  --gpr-text-color: #264166;
+  --gpr-highlight-color: #438df6;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(38, 65, 102, 0.12);
+}
+
+.emoji-icon,
+.gif-icon {
   cursor: pointer;
   display: -webkit-box;
   display: -ms-flexbox;

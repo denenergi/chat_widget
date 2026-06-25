@@ -18,6 +18,7 @@ export const MESSAGES_TYPES = {
 export const DATA_MESSAGES_TYPES = {
   text: "text",
   media: "media",
+  gif: "gif",
 };
 
 export const MEDIA_FILE_TYPES = {
@@ -25,6 +26,7 @@ export const MEDIA_FILE_TYPES = {
   file: "file",
   audio: "audio",
   video: "video",
+  gif: "gif",
 };
 
 export const LIGHT_COLOR_VALUE = -20;

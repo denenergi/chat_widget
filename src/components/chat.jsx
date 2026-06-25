@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { StorageService } from "../service/token/storage.service";
 import "../App.scss";
 import TextareaAutosize from "react-textarea-autosize";
@@ -8,12 +8,14 @@ import ImageModal from "./imageModal";
 import BackButton from "./svg/BackButton";
 import CloseButton from "./svg/CloseButton";
 import Picker from "emoji-picker-react";
+import { GifPicker } from "../utils/gifPicker";
 import Avatar from "./Avatar";
 import SendButton from "./svg/SendButton";
 import {
   adaptMessage,
   widgetColorStyle,
   formatTimestampToDate,
+  formatDate,
 } from "../utils/utils";
 import { DATA_MESSAGES_TYPES, MESSAGES_TYPES } from "../const/const";
 import { useDropzone } from "react-dropzone";
@@ -21,6 +23,13 @@ import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import ScrollBottom from "./svg/ScrollBottom";
 import InputFileIcon from "./svg/InputFileIcon";
 import EmojiIcon from "./svg/EmojiIcon";
+import GifIcon from "./svg/GifIcon";
+import {
+  createGifProvider,
+  isGifPickerConfigured,
+  mapGifToPayload,
+} from "../utils/gifProvider";
+import { buildGifMessageHtml, fetchGifAsMediaFile } from "../utils/gifMessage";
 import SmallSendButton from "./svg/SmallSendButton";
 
 const MIN_MOBILE_HEIGHT = 210;
@@ -69,6 +78,7 @@ export function Chat({
   isNeedNameEmail,
   isNeedManagerButton,
   handleOpenSocket,
+  setMessagesList,
 }) {
   const {
     color,
@@ -78,6 +88,8 @@ export function Chat({
     widgetTextLanguage,
     managerSecond,
     managerThird,
+    showEmoji,
+    showGif,
   } = widgetOptions;
 
   const [isMinHeight, setIsMinHeight] = useState(false);
@@ -94,6 +106,7 @@ export function Chat({
   const [isShowInputs, setIsShowInputs] = useState(false);
   const [typingMessage, setTypingMessage] = useState(" ");
   const [showPicker, setShowPicker] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const [isTextTyping, setIsTextTyping] = useState(false);
   const [headHeight, setHeadHeight] = useState(0);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -115,6 +128,12 @@ export function Chat({
   const seenMessageIdsRef = useRef(new Set());
   const isInitialMessagesRef = useRef(true);
   const isEnteringChatRef = useRef(false);
+
+  const gifProvider = useMemo(
+    () => createGifProvider(browserLanguage),
+    [browserLanguage]
+  );
+  const canShowGifPicker = showGif !== false && isGifPickerConfigured();
 
   const inputText = useRef();
   const messagesListRef = useRef();
@@ -380,6 +399,16 @@ export function Chat({
     setShowPicker(false);
   };
 
+  const toggleEmojiPicker = () => {
+    setShowGifPicker(false);
+    setShowPicker((val) => !val);
+  };
+
+  const toggleGifPicker = () => {
+    setShowPicker(false);
+    setShowGifPicker((val) => !val);
+  };
+
   window.addEventListener("keydown", function (e) {
     if (e.keyCode !== 13) return;
   });
@@ -438,7 +467,62 @@ export function Chat({
         })
       );
     }
+
+    if (type === DATA_MESSAGES_TYPES.gif) {
+      const gifHtml = buildGifMessageHtml(message);
+      socket.send(
+        JSON.stringify({
+          action: "JWSendMessage",
+          data: {
+            text: gifHtml,
+          },
+        })
+      );
+    }
   };
+
+  const onGifClick = useCallback(
+    (gif) => {
+      const payload = mapGifToPayload(gif);
+      const gifHtml = buildGifMessageHtml(payload);
+      const gifUrl = payload.original_url || payload.preview_url;
+
+      if (setMessagesList && messagesList) {
+        setMessagesList([
+          ...messagesList,
+          {
+            id: `local-gif-${Date.now()}`,
+            from: MESSAGES_TYPES.customer,
+            media: null,
+            media_type: null,
+            text: gifHtml,
+            gif: {
+              original_url: gifUrl,
+              preview_url: payload.preview_url,
+              description: payload.description,
+            },
+            time: formatDate(new Date()),
+            status: "sent",
+            is_system: false,
+          },
+        ]);
+      }
+
+      setShowGifPicker(false);
+      setCloseChatMessage(null);
+      localStorage.removeItem("closeChat");
+      inputText.current?.focus();
+
+      fetchGifAsMediaFile(gifUrl, payload.gif_id)
+        .then((file) => {
+          sendMessage(file, DATA_MESSAGES_TYPES.media);
+        })
+        .catch(() => {
+          sendMessage(payload, DATA_MESSAGES_TYPES.gif);
+        });
+    },
+    [socket, setMessagesList, messagesList]
+  );
 
   // useEffect(() => {
   //   socket.send(
@@ -1024,10 +1108,18 @@ export function Chat({
         </div>
 
         <div className="picker-container">
-          {showPicker && (
+          {showPicker && showEmoji && (
             <Picker
               pickerStyle={{ width: "100%" }}
               onEmojiClick={onEmojiClick}
+            />
+          )}
+          {showGifPicker && gifProvider && (
+            <GifPicker
+              provider={gifProvider}
+              onGifClick={onGifClick}
+              width="100%"
+              height={360}
             />
           )}
         </div>
@@ -1065,12 +1157,19 @@ export function Chat({
                 }}
               ></TextareaAutosize>
               <div className="jedidesk-chat__form-buttons">
-                {!isMobile && (
-                  <div
-                    className="emoji-icon"
-                    onClick={() => setShowPicker((val) => !val)}
-                  >
+                {!isMobile && showEmoji && (
+                  <div className="emoji-icon" onClick={toggleEmojiPicker}>
                     <EmojiIcon />
+                  </div>
+                )}
+                {!isMobile && canShowGifPicker && (
+                  <div
+                    className="gif-icon"
+                    onClick={toggleGifPicker}
+                    title="GIF"
+                    aria-label="GIF"
+                  >
+                    <GifIcon />
                   </div>
                 )}
                 {!isTextTyping && (

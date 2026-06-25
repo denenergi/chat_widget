@@ -288,6 +288,7 @@ const widgetState = {
   showTelephone: false,
   showEmail: false,
   showEmoji: true,
+  showGif: true,
   numberToCall: "",
   adressToWrite: "",
   systemLanguage: {

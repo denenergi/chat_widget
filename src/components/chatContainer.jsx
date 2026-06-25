@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import Frame from "react-frame-component";
 import { Chat } from "./chat";
 import { HidenIcon } from "./hidenIcon";
@@ -17,10 +17,15 @@ import ShowChatIcon from "./svg/ShowChatIcon";
 import state from "./state/state";
 import { GET_WIDGET_DETAILS } from "../utils/requests";
 import useServerCss from "../hooks/useServerCss.jsx";
+import { mergeServerGifMessage } from "../utils/gifMessage";
 import { getAssetBaseUrl } from "../utils/assetBaseUrl";
+import {
+  getMinimalFrameHtml,
+  syncStylesToIframe,
+} from "../utils/iframeStyles";
+import { WidgetFrameStyles } from "./WidgetFrameStyles";
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
-const WIDGET_CSS_URL = `${getAssetBaseUrl()}/mysite.css`;
 const CHAT_OPEN_MS = 450;
 const CHAT_CLOSE_MS = 420;
 
@@ -35,6 +40,29 @@ let audio = new Audio(`${getAssetBaseUrl()}/assets/sounds/sentmessage.mp3`);
 // })))
 
 export function ChatContainer() {
+  const iconFrameRef = useRef(null);
+  const chatFrameRef = useRef(null);
+  const widgetFrameHtml = useMemo(() => getMinimalFrameHtml(), []);
+  const widgetChatFrameHtml = useMemo(() => getMinimalFrameHtml({ chat: true }), []);
+
+  const handleIconFrameMount = useCallback(() => {
+    const doc =
+      iconFrameRef.current?.contentDocument ||
+      document.getElementById("iconFrame")?.contentDocument;
+    syncStylesToIframe(doc, { chat: false });
+  }, []);
+
+  const handleChatFrameMount = useCallback(() => {
+    const doc =
+      chatFrameRef.current?.contentDocument ||
+      document.getElementById("jedidesk-iframe")?.contentDocument;
+    syncStylesToIframe(doc, { chat: true });
+  }, []);
+
+  const handleChatFrameUpdate = useCallback(() => {
+    handleChatFrameMount();
+  }, [handleChatFrameMount]);
+
   const [socket, setSocket] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(
     window?.jediDeskSettings?.alwaysOpen || false
@@ -451,6 +479,7 @@ export function ChatContainer() {
               : widgetOptions.customWidgetStyles,
             showMockAvatars: widgetOptionsBack?.showMockAvatars ?? true,
             showEmoji: widgetOptionsBack?.showEmoji ?? true,
+            showGif: widgetOptionsBack?.showGif ?? true,
             showEmail: widgetOptionsBack.showEmail
               ? widgetOptionsBack.showEmail
               : widgetOptions.showEmail,
@@ -1133,7 +1162,23 @@ export function ChatContainer() {
 
   const addNewMessage = (message) => {
     setIsChatAction(false);
-    setMessagesList([...messagesList, message]);
+    setMessagesList((prev) => {
+      let optimisticGif = null;
+      const withoutOptimisticGif = prev.filter((item) => {
+        if (
+          typeof item.id === "string" &&
+          item.id.startsWith("local-gif-") &&
+          message.from === MESSAGES_TYPES.customer
+        ) {
+          optimisticGif = item;
+          return false;
+        }
+        return true;
+      });
+
+      const mergedMessage = mergeServerGifMessage(message, optimisticGif);
+      return [...withoutOptimisticGif, mergedMessage];
+    });
   };
 
   const isNullLinks = () => {
@@ -1308,10 +1353,13 @@ export function ChatContainer() {
           >
             <Frame
               id="iconFrame"
+              ref={iconFrameRef}
               frameBorder="none"
               width="100px"
               height="100px"
-              initialContent={`<!DOCTYPE html><html><link rel=stylesheet href=${WIDGET_CSS_URL}><head></head><body><div></div></body></html>`}
+              initialContent={widgetFrameHtml}
+              head={<WidgetFrameStyles />}
+              contentDidMount={handleIconFrameMount}
             >
               {/* <Frame
               frameBorder="none"
@@ -1574,8 +1622,12 @@ export function ChatContainer() {
           <div className="jedidesk-frame-position">
             <Frame
               id="jedidesk-iframe"
+              ref={chatFrameRef}
               style={{ width: "100%", height: "100%", border: "none" }}
-              initialContent={`<!DOCTYPE html><html><meta name=viewport content=width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover /><link rel=stylesheet href=${WIDGET_CSS_URL}><head></head><body><div></div></body></html>`}
+              initialContent={widgetChatFrameHtml}
+              head={<WidgetFrameStyles chat />}
+              contentDidMount={handleChatFrameMount}
+              contentDidUpdate={handleChatFrameUpdate}
             >
               {/* <Frame
               id="jedidesk-iframe"
