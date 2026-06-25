@@ -17,19 +17,16 @@ import ShowChatIcon from "./svg/ShowChatIcon";
 import state from "./state/state";
 import { GET_WIDGET_DETAILS } from "../utils/requests";
 import useServerCss from "../hooks/useServerCss.jsx";
+import { getAssetBaseUrl } from "../utils/assetBaseUrl";
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
-const BASE_DOMAIN_URL = process.env.REACT_APP_BASE_DOMAIN_URL;
-const WIDGET_CSS_URL =
-  process.env.NODE_ENV === "development"
-    ? `${typeof window !== "undefined" ? window.location.origin : ""}/mysite.css`
-    : `${BASE_DOMAIN_URL}/mysite.css`;
+const WIDGET_CSS_URL = `${getAssetBaseUrl()}/mysite.css`;
 const CHAT_OPEN_MS = 450;
 const CHAT_CLOSE_MS = 420;
 
 console.log = function () {};
 
-let audio = new Audio(`${BASE_DOMAIN_URL}/assets/sounds/sentmessage.mp3`);
+let audio = new Audio(`${getAssetBaseUrl()}/assets/sounds/sentmessage.mp3`);
 
 // console.log({ BASE_DOMAIN_URL: BASE_DOMAIN_URL });
 
@@ -70,9 +67,9 @@ export function ChatContainer() {
   const [showAsyncLoad, setShowAsyncLoad] = useState(true);
   const [widgetOptions, setWidgetOptions] = useState(state);
   const [qualityControl, setQualityControl] = useState({
-    perfect: `${BASE_DOMAIN_URL}/assets/img/good-quality.png`,
-    middle: `${BASE_DOMAIN_URL}/assets/img/normal-quality.png`,
-    bad: `${BASE_DOMAIN_URL}/assets/img/bad-quality.png`,
+    perfect: `${getAssetBaseUrl()}/assets/img/good-quality.png`,
+    middle: `${getAssetBaseUrl()}/assets/img/normal-quality.png`,
+    bad: `${getAssetBaseUrl()}/assets/img/bad-quality.png`,
   });
   const [openDocument, setOpenDocument] = useState(false);
   const [newMessages, setNewMessages] = useState(false);

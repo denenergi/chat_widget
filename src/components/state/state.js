@@ -1,3 +1,7 @@
+import { getAssetBaseUrl } from "../../utils/assetBaseUrl";
+
+const assetBase = getAssetBaseUrl();
+
 const widgetState = {
   color: "#438DF6",
   fontColor: "#ffffff",
@@ -268,9 +272,9 @@ const widgetState = {
       showWidget: true,
     },
   },
-  managerPhoto: `${process.env.REACT_APP_BASE_DOMAIN_URL}/assets/img/avatar_placeholder.jpg`,
-  managerSecond: `${process.env.REACT_APP_BASE_DOMAIN_URL}/assets/img/manager-second.png`,
-  managerThird: `${process.env.REACT_APP_BASE_DOMAIN_URL}/assets/img/manager-third.png`,
+  managerPhoto: `${assetBase}/assets/img/avatar_placeholder.jpg`,
+  managerSecond: `${assetBase}/assets/img/manager-second.png`,
+  managerThird: `${assetBase}/assets/img/manager-third.png`,
   setWidgetBeforeOpenImmage: true,
   isUseInterdomain: false,
   isHideWidgetOnSite: false,
