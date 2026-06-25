@@ -4,9 +4,24 @@ export const getAssetBaseUrl = () => {
     return fromEnv.replace(/\/$/, "");
   }
   if (typeof window !== "undefined") {
-    return window.location.origin;
+    const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
+    return `${window.location.origin}${publicPath}`;
   }
-  return "";
+  const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
+  return publicPath || "";
+};
+
+const resolveStaticAssetUrl = (filename) => {
+  const base = getAssetBaseUrl();
+  if (base) {
+    return `${base}/${filename}`;
+  }
+  if (typeof window !== "undefined") {
+    const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
+    return `${window.location.origin}${publicPath}/${filename}`;
+  }
+  const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
+  return `${publicPath}/${filename}`;
 };
 
 /** CSS for widget iframe — dev serves from local origin; prod/embed uses REACT_APP_BASE_DOMAIN_URL. */
@@ -15,16 +30,10 @@ export const getWidgetCssUrl = () => {
     typeof window !== "undefined" &&
     process.env.NODE_ENV === "development"
   ) {
-    return `${window.location.origin}/mysite.css`;
+    const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
+    return `${window.location.origin}${publicPath}/mysite.css`;
   }
-  const base = getAssetBaseUrl();
-  if (base) {
-    return `${base}/mysite.css`;
-  }
-  if (typeof window !== "undefined") {
-    return `${window.location.origin}/mysite.css`;
-  }
-  return "/mysite.css";
+  return resolveStaticAssetUrl("mysite.css");
 };
 
 export const WIDGET_FONT_LINK =
@@ -44,16 +53,10 @@ export const getGifPickerCssUrl = () => {
     typeof window !== "undefined" &&
     process.env.NODE_ENV === "development"
   ) {
-    return `${window.location.origin}/gif-picker-react.css`;
+    const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
+    return `${window.location.origin}${publicPath}/gif-picker-react.css`;
   }
-  const base = getAssetBaseUrl();
-  if (base) {
-    return `${base}/gif-picker-react.css`;
-  }
-  if (typeof window !== "undefined") {
-    return `${window.location.origin}/gif-picker-react.css`;
-  }
-  return "/gif-picker-react.css";
+  return resolveStaticAssetUrl("gif-picker-react.css");
 };
 
 export const buildWidgetFrameHead = ({ chat = false } = {}) => {

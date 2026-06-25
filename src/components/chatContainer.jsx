@@ -17,7 +17,7 @@ import ShowChatIcon from "./svg/ShowChatIcon";
 import state from "./state/state";
 import { GET_WIDGET_DETAILS } from "../utils/requests";
 import useServerCss from "../hooks/useServerCss.jsx";
-import { mergeServerGifMessage } from "../utils/gifMessage";
+import { mergeServerGifMessage, extractGifUrl } from "../utils/gifMessage";
 import { getAssetBaseUrl } from "../utils/assetBaseUrl";
 import {
   getMinimalFrameHtml,
@@ -1177,6 +1177,23 @@ export function ChatContainer() {
       });
 
       const mergedMessage = mergeServerGifMessage(message, optimisticGif);
+
+      if (
+        optimisticGif &&
+        !extractGifUrl(mergedMessage) &&
+        mergedMessage.media_type !== "image"
+      ) {
+        return [
+          ...withoutOptimisticGif,
+          {
+            ...optimisticGif,
+            id: mergedMessage.id,
+            time: mergedMessage.time || optimisticGif.time,
+            status: mergedMessage.status || optimisticGif.status,
+          },
+        ];
+      }
+
       return [...withoutOptimisticGif, mergedMessage];
     });
   };
