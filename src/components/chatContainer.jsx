@@ -1309,8 +1309,8 @@ export function ChatContainer() {
             <Frame
               id="iconFrame"
               frameBorder="none"
-              width="90px"
-              height="90px"
+              width="100px"
+              height="100px"
               initialContent={`<!DOCTYPE html><html><link rel=stylesheet href=${WIDGET_CSS_URL}><head></head><body><div></div></body></html>`}
             >
               {/* <Frame

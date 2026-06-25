@@ -276,12 +276,12 @@
   }
 
   &--close {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
 
     @media (max-width: 750px) {
-      height: 90px;
-      width: 90px;
+      height: 100px;
+      width: 100px;
       -ms-flex-item-align: end;
       align-self: flex-end;
       margin-bottom: 20px;
