@@ -5,15 +5,14 @@ const GIF_PROVIDERS = {
 
 const GIPHY_API_KEY = "1hrsRLrsJuyiBHwtn349Pn3nyzklVWZB";
 
-export const getGifProviderName = () =>
-  (process.env.REACT_APP_GIF_PROVIDER || "giphy").toLowerCase();
+export const getGifProviderName = () => GIF_PROVIDERS.giphy;
 
 export const isGifPickerConfigured = () => {
   const provider = getGifProviderName();
   if (provider === GIF_PROVIDERS.klipy) {
     return Boolean(process.env.REACT_APP_KLIPY_API_KEY);
   }
-  return Boolean(GIPHY_API_KEY);
+  return true;
 };
 
 const parseGiphyItem = (item) => {

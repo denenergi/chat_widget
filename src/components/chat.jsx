@@ -1177,7 +1177,7 @@ export function Chat({
                     <EmojiIcon />
                   </div>
                 )}
-                {!isMobile && canShowGifPicker && (
+                {canShowGifPicker && (
                   <div
                     className="gif-icon"
                     onClick={toggleGifPicker}

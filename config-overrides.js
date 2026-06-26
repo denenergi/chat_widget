@@ -126,6 +126,36 @@ module.exports = function override(config, env) {
       };
     }
   });
+
+  const assetVersion =
+    process.env.REACT_APP_ASSET_VERSION || process.env.REACT_APP_GIT_SHA || "";
+
+  if (assetVersion) {
+    const HtmlWebpackPlugin = require("html-webpack-plugin");
+    config.plugins.push({
+      apply: (compiler) => {
+        compiler.hooks.compilation.tap("CacheBustMainJs", (compilation) => {
+          HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(
+            "CacheBustMainJs",
+            (data, cb) => {
+              data.bodyTags.forEach((tag) => {
+                if (
+                  tag.tagName === "script" &&
+                  tag.attributes?.src?.includes("main.js")
+                ) {
+                  const src = tag.attributes.src;
+                  const separator = src.includes("?") ? "&" : "?";
+                  tag.attributes.src = `${src}${separator}v=${encodeURIComponent(assetVersion)}`;
+                }
+              });
+              cb(null, data);
+            }
+          );
+        });
+      },
+    });
+  }
+
   console.log("Additional config was applied through config-overrides.js");
 
   return config;
