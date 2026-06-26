@@ -941,10 +941,11 @@ export function ChatContainer() {
   }, [socket?.readyState]);
 
   useEffect(() => {
-    if (chatManager) {
+    if (chatManager && isChatOpenRef.current) {
       playWidgetNotificationSound({
         isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
-        isChatOpen: isChatOpenRef.current,
+        isChatOpen: true,
+        haptic: false,
       });
     }
   }, [chatManager, widgetOptions.isOffVolumeWidget]);
@@ -1054,14 +1055,16 @@ export function ChatContainer() {
           addAllMessages(data.data);
         }
 
-          if (data.type === SOKET_MESSAGE_TYPES.newMessage) {
+        if (data.type === SOKET_MESSAGE_TYPES.newMessage) {
           addNewMessage(data.data);
           socket.send(JSON.stringify({ action: "JWGetManager" }));
 
-          playWidgetNotificationSound({
-            isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
-            isChatOpen: isChatOpenRef.current,
-          });
+          if (data.data?.from === "manager") {
+            playWidgetNotificationSound({
+              isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
+              isChatOpen: isChatOpenRef.current,
+            });
+          }
         }
       };
     }

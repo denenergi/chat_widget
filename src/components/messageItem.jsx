@@ -74,6 +74,7 @@ const MessageItem = ({
         playWidgetNotificationSound({
           isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
           isChatOpen: true,
+          haptic: false,
         });
       }, 1500);
       return () => clearTimeout(timer);
