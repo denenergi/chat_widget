@@ -18,7 +18,6 @@ const MessageItem = ({
   isMobile,
   onOpenImageModal,
   loadingBeforeMessages,
-  audio,
   changedEvent,
   setChangedEvent,
   replyingMEssages,
@@ -71,13 +70,10 @@ const MessageItem = ({
       setFirstLoad(true);
       const timer = setTimeout(() => {
         setFirstLoad(false);
-        if (!widgetOptions.isOffVolumeWidget) {
-          audio.play();
-        }
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [message.id, widgetOptions.isOffVolumeWidget, audio]);
+  }, [message.id]);
 
   const scrollTo = (id) => {
     const queryRef = ref.current.parentElement.children;

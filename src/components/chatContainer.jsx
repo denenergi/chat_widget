@@ -23,6 +23,10 @@ import {
   getMinimalFrameHtml,
   syncStylesToIframe,
 } from "../utils/iframeStyles";
+import {
+  playWidgetNotificationSound,
+  unlockWidgetNotificationSound,
+} from "../utils/widgetNotificationSound";
 import { WidgetFrameStyles } from "./WidgetFrameStyles";
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
@@ -32,8 +36,6 @@ const CHAT_OPEN_MS_MOBILE = 720;
 const CHAT_CLOSE_MS_MOBILE = 580;
 
 console.log = function () {};
-
-let audio = new Audio(`${getAssetBaseUrl()}/assets/sounds/sentmessage.mp3`);
 
 // console.log({ BASE_DOMAIN_URL: BASE_DOMAIN_URL });
 
@@ -69,6 +71,13 @@ export function ChatContainer() {
   const [isChatOpen, setIsChatOpen] = useState(
     window?.jediDeskSettings?.alwaysOpen || false
   );
+  const isChatOpenRef = useRef(
+    window?.jediDeskSettings?.alwaysOpen || false
+  );
+
+  useEffect(() => {
+    isChatOpenRef.current = isChatOpen;
+  }, [isChatOpen]);
   const [isChatClosing, setIsChatClosing] = useState(false);
   const [isChatOpening, setIsChatOpening] = useState(false);
   const [isLauncherEntering, setIsLauncherEntering] = useState(false);
@@ -929,10 +938,13 @@ export function ChatContainer() {
   }, [socket?.readyState]);
 
   useEffect(() => {
-    if (chatManager && !widgetOptions.isOffVolumeWidget) {
-      audio.play();
+    if (chatManager) {
+      playWidgetNotificationSound({
+        isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
+        isChatOpen: isChatOpenRef.current,
+      });
     }
-  }, [chatManager]);
+  }, [chatManager, widgetOptions.isOffVolumeWidget]);
 
   useEffect(() => {
     if (isSocketOpen) {
@@ -1039,13 +1051,14 @@ export function ChatContainer() {
           addAllMessages(data.data);
         }
 
-        if (data.type === SOKET_MESSAGE_TYPES.newMessage) {
+          if (data.type === SOKET_MESSAGE_TYPES.newMessage) {
           addNewMessage(data.data);
           socket.send(JSON.stringify({ action: "JWGetManager" }));
 
-          if (!widgetOptions.isOffVolumeWidget) {
-            audio.play();
-          }
+          playWidgetNotificationSound({
+            isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
+            isChatOpen: isChatOpenRef.current,
+          });
         }
       };
     }
@@ -1111,6 +1124,7 @@ export function ChatContainer() {
   };
 
   const openChatWithAnimation = () => {
+    unlockWidgetNotificationSound();
     setIsChatOpening(true);
     setIsChatOpen(true);
     setCloseWelcomeMessage(false);
@@ -1689,7 +1703,6 @@ export function ChatContainer() {
                   setCloseChatMessage={setCloseChatMessage}
                   loadingBeforeMessages={loadingBeforeMessages}
                   qualityControl={qualityControl}
-                  audio={audio}
                   chatHeight={chatHeight}
                   changedEvent={changedEvent}
                   message={message}
