@@ -3,11 +3,7 @@ const GIF_PROVIDERS = {
   klipy: "klipy",
 };
 
-// Embedded for GitHub Pages / local dev. Override via REACT_APP_GIPHY_API_KEY if needed.
-const EMBEDDED_GIPHY_API_KEY = "1hrsRLrsJuyiBHwtn349Pn3nyzklVWZB";
-
-const getGiphyApiKey = () =>
-  process.env.REACT_APP_GIPHY_API_KEY || EMBEDDED_GIPHY_API_KEY;
+const GIPHY_API_KEY = "1hrsRLrsJuyiBHwtn349Pn3nyzklVWZB";
 
 export const getGifProviderName = () =>
   (process.env.REACT_APP_GIF_PROVIDER || "giphy").toLowerCase();
@@ -17,7 +13,7 @@ export const isGifPickerConfigured = () => {
   if (provider === GIF_PROVIDERS.klipy) {
     return Boolean(process.env.REACT_APP_KLIPY_API_KEY);
   }
-  return Boolean(getGiphyApiKey());
+  return Boolean(GIPHY_API_KEY);
 };
 
 const parseGiphyItem = (item) => {
@@ -124,9 +120,7 @@ export const createGifProvider = (lang) => {
     return Klipy(apiKey, locale ? { locale } : {});
   }
 
-  const apiKey = getGiphyApiKey();
-  if (!apiKey) return null;
-  return buildGiphyProvider(apiKey, locale);
+  return buildGiphyProvider(GIPHY_API_KEY, locale);
 };
 
 export const mapGifToPayload = (gif) => {
