@@ -9,7 +9,10 @@ import BackButton from "./svg/BackButton";
 import CloseButton from "./svg/CloseButton";
 import Picker from "emoji-picker-react";
 import { GifPicker } from "../utils/gifPicker";
-import { unlockWidgetNotificationSound } from "../utils/widgetNotificationSound";
+import {
+  playWidgetNotificationSound,
+  prepareWidgetNotificationSound,
+} from "../utils/widgetNotificationSound";
 import Avatar from "./Avatar";
 import SendButton from "./svg/SendButton";
 import {
@@ -379,7 +382,7 @@ export function Chat({
         return;
       }
 
-      unlockWidgetNotificationSound();
+      prepareWidgetNotificationSound();
       sendMessage(adaptMessage(message), DATA_MESSAGES_TYPES.text);
       setCloseChatMessage(null);
       localStorage.removeItem("closeChat");
@@ -491,6 +494,11 @@ export function Chat({
         })
       );
     }
+
+    playWidgetNotificationSound({
+      isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
+      isChatOpen: true,
+    });
   };
 
   const onGifClick = useCallback(
