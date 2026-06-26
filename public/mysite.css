@@ -207,8 +207,9 @@ ul {
 }
 
 .hiden-icon__carousel-viewport--alternate .hiden-icon__carousel-track {
-  -webkit-animation: jedidesk-launcher-carousel-up 7.5s linear infinite;
-  animation: jedidesk-launcher-carousel-up 7.5s linear infinite;
+  height: 150px;
+  -webkit-animation: jedidesk-launcher-carousel-up 6s linear infinite;
+  animation: jedidesk-launcher-carousel-up 6s linear infinite;
 }
 
 .hiden-icon__launcher-icon {
@@ -231,77 +232,69 @@ ul {
 
 @-webkit-keyframes jedidesk-launcher-carousel-up {
   0%,
-  24% {
+  25% {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
   }
-  24% {
-    -webkit-animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  37.5% {
+    -webkit-transform: translate3d(0, -33.333%, 0);
+    transform: translate3d(0, -33.333%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
   }
-  40% {
-    -webkit-transform: translate3d(0, -50px, 0);
-    transform: translate3d(0, -50px, 0);
+  37.501%,
+  62.5% {
+    -webkit-transform: translate3d(0, -33.333%, 0);
+    transform: translate3d(0, -33.333%, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
   }
-  40%,
-  56% {
-    -webkit-transform: translate3d(0, -50px, 0);
-    transform: translate3d(0, -50px, 0);
+  75% {
+    -webkit-transform: translate3d(0, -66.666%, 0);
+    transform: translate3d(0, -66.666%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
   }
-  56% {
-    -webkit-animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  72% {
-    -webkit-transform: translate3d(0, -100px, 0);
-    transform: translate3d(0, -100px, 0);
-  }
-  72%,
-  99.9% {
-    -webkit-transform: translate3d(0, -100px, 0);
-    transform: translate3d(0, -100px, 0);
-  }
+  75.001%,
   100% {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, -66.666%, 0);
+    transform: translate3d(0, -66.666%, 0);
   }
 }
 
 @keyframes jedidesk-launcher-carousel-up {
   0%,
-  24% {
+  25% {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
   }
-  24% {
-    -webkit-animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  37.5% {
+    -webkit-transform: translate3d(0, -33.333%, 0);
+    transform: translate3d(0, -33.333%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
   }
-  40% {
-    -webkit-transform: translate3d(0, -50px, 0);
-    transform: translate3d(0, -50px, 0);
+  37.501%,
+  62.5% {
+    -webkit-transform: translate3d(0, -33.333%, 0);
+    transform: translate3d(0, -33.333%, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
   }
-  40%,
-  56% {
-    -webkit-transform: translate3d(0, -50px, 0);
-    transform: translate3d(0, -50px, 0);
+  75% {
+    -webkit-transform: translate3d(0, -66.666%, 0);
+    transform: translate3d(0, -66.666%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
   }
-  56% {
-    -webkit-animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  72% {
-    -webkit-transform: translate3d(0, -100px, 0);
-    transform: translate3d(0, -100px, 0);
-  }
-  72%,
-  99.9% {
-    -webkit-transform: translate3d(0, -100px, 0);
-    transform: translate3d(0, -100px, 0);
-  }
+  75.001%,
   100% {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, -66.666%, 0);
+    transform: translate3d(0, -66.666%, 0);
   }
 }
 
