@@ -21,7 +21,11 @@ import {
   formatTimestampToDate,
   formatDate,
 } from "../utils/utils";
-import { DATA_MESSAGES_TYPES, MESSAGES_TYPES } from "../const/const";
+import {
+  DATA_MESSAGES_TYPES,
+  MEDIA_FILE_TYPES,
+  MESSAGES_TYPES,
+} from "../const/const";
 import { useDropzone } from "react-dropzone";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import ScrollBottom from "./svg/ScrollBottom";
@@ -33,7 +37,7 @@ import {
   isGifPickerConfigured,
   mapGifToPayload,
 } from "../utils/gifProvider";
-import { buildGifMessageHtml } from "../utils/gifMessage";
+import { buildGifMessageText } from "../utils/gifMessage";
 import SmallSendButton from "./svg/SmallSendButton";
 
 const MIN_MOBILE_HEIGHT = 210;
@@ -484,12 +488,15 @@ export function Chat({
     }
 
     if (type === DATA_MESSAGES_TYPES.gif) {
-      const gifHtml = buildGifMessageHtml(message);
+      const gifUrl = message.original_url || message.preview_url;
+      const gifText = buildGifMessageText(message);
       socket.send(
         JSON.stringify({
           action: "JWSendMessage",
           data: {
-            text: gifHtml,
+            text: gifText,
+            media: gifUrl,
+            media_type: MEDIA_FILE_TYPES.gif,
           },
         })
       );
@@ -504,7 +511,7 @@ export function Chat({
   const onGifClick = useCallback(
     (gif) => {
       const payload = mapGifToPayload(gif);
-      const gifHtml = buildGifMessageHtml(payload);
+      const gifText = buildGifMessageText(payload);
       const gifUrl = payload.original_url || payload.preview_url;
 
       if (setMessagesList && messagesList) {
@@ -515,7 +522,7 @@ export function Chat({
             from: MESSAGES_TYPES.customer,
             media: null,
             media_type: null,
-            text: gifHtml,
+            text: gifText,
             gif: {
               original_url: gifUrl,
               preview_url: payload.preview_url,
