@@ -25,7 +25,7 @@ import {
 } from "../utils/iframeStyles";
 import {
   playWidgetNotificationSound,
-  unlockWidgetNotificationSound,
+  prepareWidgetNotificationSound,
 } from "../utils/widgetNotificationSound";
 import { WidgetFrameStyles } from "./WidgetFrameStyles";
 
@@ -77,6 +77,9 @@ export function ChatContainer() {
 
   useEffect(() => {
     isChatOpenRef.current = isChatOpen;
+    if (isChatOpen) {
+      prepareWidgetNotificationSound();
+    }
   }, [isChatOpen]);
   const [isChatClosing, setIsChatClosing] = useState(false);
   const [isChatOpening, setIsChatOpening] = useState(false);
@@ -938,10 +941,11 @@ export function ChatContainer() {
   }, [socket?.readyState]);
 
   useEffect(() => {
-    if (chatManager) {
+    if (chatManager && isChatOpenRef.current) {
       playWidgetNotificationSound({
         isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
-        isChatOpen: isChatOpenRef.current,
+        isChatOpen: true,
+        haptic: false,
       });
     }
   }, [chatManager, widgetOptions.isOffVolumeWidget]);
@@ -1051,14 +1055,16 @@ export function ChatContainer() {
           addAllMessages(data.data);
         }
 
-          if (data.type === SOKET_MESSAGE_TYPES.newMessage) {
+        if (data.type === SOKET_MESSAGE_TYPES.newMessage) {
           addNewMessage(data.data);
           socket.send(JSON.stringify({ action: "JWGetManager" }));
 
-          playWidgetNotificationSound({
-            isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
-            isChatOpen: isChatOpenRef.current,
-          });
+          if (data.data?.from === "manager") {
+            playWidgetNotificationSound({
+              isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
+              isChatOpen: isChatOpenRef.current,
+            });
+          }
         }
       };
     }
@@ -1124,7 +1130,7 @@ export function ChatContainer() {
   };
 
   const openChatWithAnimation = () => {
-    unlockWidgetNotificationSound();
+    prepareWidgetNotificationSound();
     setIsChatOpening(true);
     setIsChatOpen(true);
     setCloseWelcomeMessage(false);
