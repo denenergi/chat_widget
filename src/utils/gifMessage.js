@@ -204,25 +204,33 @@ export const mergeServerGifMessage = (serverMessage, optimisticGif) => {
     return serverMessage;
   }
 
-  if (extractGifUrl(serverMessage)) {
+  const optimisticGifUrl = extractGifUrl(optimisticGif);
+  if (!optimisticGifUrl) {
     return serverMessage;
   }
 
-  if (serverMessage.media_type === "image" && serverMessage.media) {
-    return serverMessage;
-  }
+  const serverGifUrl = extractGifUrl(serverMessage);
+  const serverStoredAsFile =
+    serverMessage.media_type === "file" ||
+    (serverMessage.media && !serverGifUrl);
 
-  const gifUrl = extractGifUrl(optimisticGif);
-  if (!gifUrl) {
-    return serverMessage;
+  if (!serverGifUrl || serverStoredAsFile) {
+    return {
+      ...serverMessage,
+      text:
+        optimisticGif.text ||
+        buildGifMessageHtml({
+          original_url: optimisticGifUrl,
+          preview_url: optimisticGifUrl,
+        }),
+      media: null,
+      media_type: null,
+      gif: optimisticGif.gif || buildGifMeta(optimisticGifUrl),
+    };
   }
 
   return {
     ...serverMessage,
-    text: optimisticGif.text || buildGifMessageHtml({ original_url: gifUrl, preview_url: gifUrl }),
-    media: serverMessage.media || gifUrl,
-    media_type:
-      serverMessage.media_type === "file" ? "gif" : serverMessage.media_type || "gif",
-    gif: optimisticGif.gif || buildGifMeta(gifUrl),
+    gif: serverMessage.gif || optimisticGif.gif || buildGifMeta(serverGifUrl),
   };
 };

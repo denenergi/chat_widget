@@ -3,7 +3,7 @@ import Frame from "react-frame-component";
 import { Chat } from "./chat";
 import { HidenIcon } from "./hidenIcon";
 import { StorageService } from "../service/token/storage.service";
-import { MESSAGES_TYPES, SOKET_MESSAGE_TYPES } from "../const/const";
+import { MESSAGES_TYPES, MEDIA_FILE_TYPES, SOKET_MESSAGE_TYPES } from "../const/const";
 import { formatDate, convertToTimestamp } from "../utils/utils";
 import { widgetColorStyle } from "../utils/utils";
 import ColoredFBIcon from "./svg/ColoredFBIcon.js";
@@ -1213,17 +1213,17 @@ export function ChatContainer() {
 
       if (
         optimisticGif &&
-        !extractGifUrl(mergedMessage) &&
-        mergedMessage.media_type !== "image"
+        (!extractGifUrl(mergedMessage) ||
+          mergedMessage.media_type === MEDIA_FILE_TYPES.file)
       ) {
         return [
           ...withoutOptimisticGif,
-          {
+          normalizeGifMessage({
             ...optimisticGif,
             id: mergedMessage.id,
             time: mergedMessage.time || optimisticGif.time,
             status: mergedMessage.status || optimisticGif.status,
-          },
+          }),
         ];
       }
 

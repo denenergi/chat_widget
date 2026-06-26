@@ -4,7 +4,7 @@ import {
   MESSAGES_TYPES,
   MEDIA_FILE_TYPES,
 } from "../const/const";
-import { extractGifUrl } from "../utils/gifMessage";
+import { extractGifUrl, normalizeGifMessage } from "../utils/gifMessage";
 import { widgetColorStyle } from "../utils/utils";
 import { openFile, getFileName } from "../utils/utils";
 import { StorageService } from "../service/token/storage.service";
@@ -98,7 +98,9 @@ const MessageItem = ({
   };
 
   const ContentRenderer = useCallback(
-    (item) => {
+    (rawItem) => {
+      const item = normalizeGifMessage(rawItem);
+
       if (
         item.id === loadingBeforeMessages.id &&
         loadingBeforeMessages.loading &&

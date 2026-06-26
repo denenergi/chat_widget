@@ -23,7 +23,6 @@ import {
 } from "../utils/utils";
 import {
   DATA_MESSAGES_TYPES,
-  MEDIA_FILE_TYPES,
   MESSAGES_TYPES,
 } from "../const/const";
 import { useDropzone } from "react-dropzone";
@@ -37,7 +36,7 @@ import {
   isGifPickerConfigured,
   mapGifToPayload,
 } from "../utils/gifProvider";
-import { buildGifMessageText } from "../utils/gifMessage";
+import { buildGifMessageText, normalizeGifMessage } from "../utils/gifMessage";
 import SmallSendButton from "./svg/SmallSendButton";
 
 const MIN_MOBILE_HEIGHT = 210;
@@ -488,15 +487,12 @@ export function Chat({
     }
 
     if (type === DATA_MESSAGES_TYPES.gif) {
-      const gifUrl = message.original_url || message.preview_url;
       const gifText = buildGifMessageText(message);
       socket.send(
         JSON.stringify({
           action: "JWSendMessage",
           data: {
             text: gifText,
-            media: gifUrl,
-            media_type: MEDIA_FILE_TYPES.gif,
           },
         })
       );
@@ -514,10 +510,10 @@ export function Chat({
       const gifText = buildGifMessageText(payload);
       const gifUrl = payload.original_url || payload.preview_url;
 
-      if (setMessagesList && messagesList) {
-        setMessagesList([
-          ...messagesList,
-          {
+      if (setMessagesList) {
+        setMessagesList((prev) => [
+          ...prev,
+          normalizeGifMessage({
             id: `local-gif-${Date.now()}`,
             from: MESSAGES_TYPES.customer,
             media: null,
@@ -531,7 +527,7 @@ export function Chat({
             time: formatDate(new Date()),
             status: "sent",
             is_system: false,
-          },
+          }),
         ]);
       }
 
@@ -541,7 +537,7 @@ export function Chat({
       releaseMessageInputFocus();
       sendMessage(payload, DATA_MESSAGES_TYPES.gif);
     },
-    [setMessagesList, messagesList, releaseMessageInputFocus, sendMessage]
+    [setMessagesList, releaseMessageInputFocus, sendMessage]
   );
 
   // useEffect(() => {
