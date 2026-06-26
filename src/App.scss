@@ -110,13 +110,6 @@
   -webkit-animation: jedidesk-widget-open 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   animation: jedidesk-widget-open 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   overflow: hidden;
-
-  @media (max-width: 750px) {
-    -webkit-animation-name: jedidesk-widget-open-mobile;
-    animation-name: jedidesk-widget-open-mobile;
-    -webkit-animation-duration: 0.4s;
-    animation-duration: 0.4s;
-  }
 }
 
 @media (max-width: 750px) {
@@ -135,12 +128,25 @@
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
+
+  .jedidesk-chat__position--open {
+    -webkit-filter: none;
+    filter: none;
+    -webkit-animation: jedidesk-widget-open-mobile 0.72s cubic-bezier(0.10, 1, 0.3, 1) backwards;
+    animation: jedidesk-widget-open-mobile 0.72s cubic-bezier(0.10, 1, 0.3, 1) backwards;
+    will-change: transform, opacity;
+  }
 }
 .jedidesk-chat__position--open-left {
   @media (min-width: 751px) {
     -webkit-transform-origin: bottom left;
     transform-origin: bottom left;
     left: 16px;
+  }
+
+  @media (max-width: 750px) {
+    -webkit-transform-origin: bottom left;
+    transform-origin: bottom left;
   }
 }
 
@@ -149,6 +155,11 @@
     -webkit-transform-origin: bottom right;
     transform-origin: bottom right;
     right: 16px;
+  }
+
+  @media (max-width: 750px) {
+    -webkit-transform-origin: bottom right;
+    transform-origin: bottom right;
   }
 }
 
@@ -569,13 +580,17 @@
 
 @keyframes jedidesk-widget-open-mobile {
   0% {
+    opacity: 0;
+    transform: scale(0.06, 0.1);
+  }
+
+  50% {
     opacity: 1;
-    transform: translate3d(0, 100%, 0);
   }
 
   100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: scale(1);
   }
 }
 
@@ -599,8 +614,18 @@
   }
 
   @media (max-width: 750px) {
-    -webkit-animation: jedidesk-widget-close-mobile 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    animation: jedidesk-widget-close-mobile 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    -webkit-animation: jedidesk-widget-close-mobile 0.58s cubic-bezier(0.45, 0, 0.15, 1) forwards;
+    animation: jedidesk-widget-close-mobile 0.58s cubic-bezier(0.45, 0, 0.15, 1) forwards;
+
+    &.jedidesk-chat__position--open-left {
+      -webkit-transform-origin: bottom left;
+      transform-origin: bottom left;
+    }
+
+    &.jedidesk-chat__position--open-right {
+      -webkit-transform-origin: bottom right;
+      transform-origin: bottom right;
+    }
   }
 }
 
@@ -618,11 +643,13 @@
 
 @keyframes jedidesk-widget-close-mobile {
   0% {
-    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    transform: scale(1);
   }
 
   100% {
-    transform: translate3d(0, 100%, 0);
+    opacity: 0;
+    transform: scale(0.01, 0.1);
   }
 }
 

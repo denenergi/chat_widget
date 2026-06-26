@@ -14,9 +14,6 @@ export function HidenIcon({
 }) {
   const onClickHidenButton = () => {
     onOpen();
-    if (!viberBotLink && !telegramBotLink) {
-      setIsWelcomScreenOpen(false);
-    }
   };
 
   const { color } = widgetOptions;

@@ -2401,6 +2401,47 @@ ul {
   pointer-events: auto;
 }
 
+@media (max-width: 750px) {
+  .jedidesk-screen-layer--welcome {
+    opacity: 1;
+    -webkit-transform: none;
+    transform: none;
+    pointer-events: auto;
+    -webkit-transition: none;
+    transition: none;
+  }
+
+  .jedidesk-screen-layer--welcome.jedidesk-screen-layer--exit {
+    -webkit-transition: opacity var(--jd-duration-normal) var(--jd-ease-out),
+      -webkit-transform var(--jd-duration-normal) var(--jd-ease-out);
+    transition: opacity var(--jd-duration-normal) var(--jd-ease-out),
+      transform var(--jd-duration-normal) var(--jd-ease-out);
+  }
+
+  .jedidesk-screen-layer--chat.jedidesk-screen-layer--active {
+    -webkit-transition: opacity var(--jd-duration-normal) var(--jd-ease-out),
+      -webkit-transform var(--jd-duration-normal) var(--jd-ease-out);
+    transition: opacity var(--jd-duration-normal) var(--jd-ease-out),
+      transform var(--jd-duration-normal) var(--jd-ease-out);
+  }
+
+  .welcom-screen__main-block-item--second,
+  .welcom-screen__main-block-item--first {
+    -webkit-animation-delay: 0s;
+    animation-delay: 0s;
+    -webkit-animation-duration: 0.4s;
+    animation-duration: 0.4s;
+    -webkit-animation-timing-function: var(--jd-ease-out);
+    animation-timing-function: var(--jd-ease-out);
+  }
+
+  .anim-welcome-appear.anim-welcome-appear-active,
+  .anti-anim-appear.anti-anim-appear-active {
+    -webkit-transition-delay: 0s;
+    transition-delay: 0s;
+  }
+}
+
 .chat-appear.chat-appear-active {
   transform: translateY(0);
   opacity: 1;

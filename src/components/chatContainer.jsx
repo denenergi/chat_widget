@@ -28,6 +28,8 @@ import { WidgetFrameStyles } from "./WidgetFrameStyles";
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 const CHAT_OPEN_MS = 450;
 const CHAT_CLOSE_MS = 420;
+const CHAT_OPEN_MS_MOBILE = 720;
+const CHAT_CLOSE_MS_MOBILE = 580;
 
 console.log = function () {};
 
@@ -1116,7 +1118,10 @@ export function ChatContainer() {
     if (isFirstOpen) {
       setIsFirstOpen(false);
     }
-    setTimeout(() => setIsChatOpening(false), CHAT_OPEN_MS);
+    setTimeout(
+      () => setIsChatOpening(false),
+      isMobile ? CHAT_OPEN_MS_MOBILE : CHAT_OPEN_MS
+    );
   };
 
   const onOpenChatHandler = () => {
@@ -1127,8 +1132,11 @@ export function ChatContainer() {
         setIsChatOpen(false);
         setIsChatClosing(false);
         setIsLauncherEntering(true);
-        setTimeout(() => setIsLauncherEntering(false), CHAT_OPEN_MS);
-      }, CHAT_CLOSE_MS);
+        setTimeout(
+          () => setIsLauncherEntering(false),
+          isMobile ? CHAT_OPEN_MS_MOBILE : CHAT_OPEN_MS
+        );
+      }, isMobile ? CHAT_CLOSE_MS_MOBILE : CHAT_CLOSE_MS);
       return;
     }
 
@@ -1320,7 +1328,10 @@ export function ChatContainer() {
         </div>
       )}
 
-      {(!isChatOpen || isChatOpening) && !isChatClosing && downloadSettings && !setIsHideWidget && (
+      {(!isChatOpen || (isChatOpening && !isMobile)) &&
+        !isChatClosing &&
+        downloadSettings &&
+        !setIsHideWidget && (
         <div
           onMouseOut={handleMouseUot}
           className={`jedidesk-chat__position ${
