@@ -17,7 +17,7 @@ import ShowChatIcon from "./svg/ShowChatIcon";
 import state from "./state/state";
 import { GET_WIDGET_DETAILS } from "../utils/requests";
 import useServerCss from "../hooks/useServerCss.jsx";
-import { mergeServerGifMessage, extractGifUrl } from "../utils/gifMessage";
+import { mergeServerGifMessage, extractGifUrl, normalizeGifMessage } from "../utils/gifMessage";
 import { getAssetBaseUrl } from "../utils/assetBaseUrl";
 import {
   getMinimalFrameHtml,
@@ -1185,7 +1185,10 @@ export function ChatContainer() {
   }, [openDocument]);
 
   const addAllMessages = (messages) => {
-    setMessagesList([messagesList[0], ...messages]);
+    setMessagesList([
+      messagesList[0],
+      ...messages.map((message) => normalizeGifMessage(message)),
+    ]);
   };
 
   const addNewMessage = (message) => {
@@ -1204,7 +1207,9 @@ export function ChatContainer() {
         return true;
       });
 
-      const mergedMessage = mergeServerGifMessage(message, optimisticGif);
+      const mergedMessage = normalizeGifMessage(
+        mergeServerGifMessage(message, optimisticGif)
+      );
 
       if (
         optimisticGif &&

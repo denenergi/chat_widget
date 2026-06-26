@@ -60,6 +60,7 @@ jobs:
         run: npm run build
         env:
           PUBLIC_URL: /chat_widget
+          REACT_APP_ASSET_VERSION: ${{ github.sha }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

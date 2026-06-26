@@ -123,12 +123,19 @@ export const createGifProvider = (lang) => {
   return buildGiphyProvider(apiKey, locale);
 };
 
-export const mapGifToPayload = (gif) => ({
-  gif_id: gif.id,
-  preview_url: gif.preview?.imageUrl || gif.imageUrl,
-  original_url: gif.imageUrl,
-  provider: gif.provider,
-  width: gif.width,
-  height: gif.height,
-  description: gif.description || "",
-});
+export const mapGifToPayload = (gif) => {
+  const originalUrl =
+    gif.provider === "giphy" && gif.id
+      ? `https://i.giphy.com/${gif.id}.gif`
+      : gif.imageUrl;
+
+  return {
+    gif_id: gif.id,
+    preview_url: gif.preview?.imageUrl || gif.imageUrl,
+    original_url: originalUrl,
+    provider: gif.provider,
+    width: gif.width,
+    height: gif.height,
+    description: gif.description || "",
+  };
+};

@@ -11,17 +11,29 @@ export const getAssetBaseUrl = () => {
   return publicPath || "";
 };
 
+const getAssetVersion = () =>
+  process.env.REACT_APP_ASSET_VERSION || process.env.REACT_APP_GIT_SHA || "";
+
+const withCacheBust = (url) => {
+  const version = getAssetVersion();
+  if (!version) return url;
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}v=${encodeURIComponent(version)}`;
+};
+
 const resolveStaticAssetUrl = (filename) => {
   const base = getAssetBaseUrl();
+  let url;
   if (base) {
-    return `${base}/${filename}`;
-  }
-  if (typeof window !== "undefined") {
+    url = `${base}/${filename}`;
+  } else if (typeof window !== "undefined") {
     const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
-    return `${window.location.origin}${publicPath}/${filename}`;
+    url = `${window.location.origin}${publicPath}/${filename}`;
+  } else {
+    const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
+    url = `${publicPath}/${filename}`;
   }
-  const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
-  return `${publicPath}/${filename}`;
+  return withCacheBust(url);
 };
 
 /** CSS for widget iframe — dev serves from local origin; prod/embed uses REACT_APP_BASE_DOMAIN_URL. */
@@ -31,7 +43,7 @@ export const getWidgetCssUrl = () => {
     process.env.NODE_ENV === "development"
   ) {
     const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
-    return `${window.location.origin}${publicPath}/mysite.css`;
+    return withCacheBust(`${window.location.origin}${publicPath}/mysite.css`);
   }
   return resolveStaticAssetUrl("mysite.css");
 };
@@ -54,7 +66,9 @@ export const getGifPickerCssUrl = () => {
     process.env.NODE_ENV === "development"
   ) {
     const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
-    return `${window.location.origin}${publicPath}/gif-picker-react.css`;
+    return withCacheBust(
+      `${window.location.origin}${publicPath}/gif-picker-react.css`
+    );
   }
   return resolveStaticAssetUrl("gif-picker-react.css");
 };

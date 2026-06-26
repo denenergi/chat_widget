@@ -1,5 +1,5 @@
 const GIF_URL_PATTERN =
-  /\.gif(\?|$)|giphy\.com|media[0-9]?\.giphy\.com|klipy\.com|tenor\.com/i;
+  /\.gif(\?|$)|giphy\.com|media[0-9]?\.giphy\.com|i\.giphy\.com|klipy\.com|tenor\.com/i;
 
 export const isGifUrl = (url) =>
   typeof url === "string" && url.length > 0 && GIF_URL_PATTERN.test(url);
@@ -23,6 +23,50 @@ export const buildGifMessageHtml = (payload) => {
   const url = payload.original_url || payload.preview_url;
   const alt = String(payload.description || "GIF").replace(/"/g, "&quot;");
   return `<img src="${url}" class="jedidesk-chat__mesages-area-item-image jedidesk-chat__mesages-area-item-gif" alt="${alt}" />`;
+};
+
+export const normalizeGifMessage = (message) => {
+  if (!message || typeof message !== "object") return message;
+
+  const gifUrl = extractGifUrl(message);
+  if (!gifUrl) return message;
+
+  const isBase64Gif =
+    typeof message.media === "string" &&
+    message.media.startsWith("data:image/gif");
+
+  if (message.media_type === "file" || isBase64Gif) {
+    return {
+      ...message,
+      text:
+        message.text && extractImgSrcFromHtml(message.text)
+          ? message.text
+          : buildGifMessageHtml({
+              original_url: gifUrl,
+              preview_url: gifUrl,
+              description: message.gif?.description,
+            }),
+      media: null,
+      media_type: null,
+      gif: message.gif || {
+        original_url: gifUrl,
+        preview_url: gifUrl,
+      },
+    };
+  }
+
+  if (!message.gif?.original_url) {
+    return {
+      ...message,
+      gif: {
+        original_url: gifUrl,
+        preview_url: gifUrl,
+        description: message.gif?.description || "",
+      },
+    };
+  }
+
+  return message;
 };
 
 export const fetchGifAsMediaFile = (url, gifId) =>

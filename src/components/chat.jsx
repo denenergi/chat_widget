@@ -33,7 +33,7 @@ import {
   isGifPickerConfigured,
   mapGifToPayload,
 } from "../utils/gifProvider";
-import { buildGifMessageHtml, fetchGifAsMediaFile } from "../utils/gifMessage";
+import { buildGifMessageHtml } from "../utils/gifMessage";
 import SmallSendButton from "./svg/SmallSendButton";
 
 const MIN_MOBILE_HEIGHT = 210;
@@ -532,16 +532,9 @@ export function Chat({
       setCloseChatMessage(null);
       localStorage.removeItem("closeChat");
       releaseMessageInputFocus();
-
-      fetchGifAsMediaFile(gifUrl, payload.gif_id)
-        .then((file) => {
-          sendMessage(file, DATA_MESSAGES_TYPES.media);
-        })
-        .catch(() => {
-          sendMessage(payload, DATA_MESSAGES_TYPES.gif);
-        });
+      sendMessage(payload, DATA_MESSAGES_TYPES.gif);
     },
-    [socket, setMessagesList, messagesList, releaseMessageInputFocus]
+    [setMessagesList, messagesList, releaseMessageInputFocus, sendMessage]
   );
 
   // useEffect(() => {
