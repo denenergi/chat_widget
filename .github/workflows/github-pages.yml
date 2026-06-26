@@ -28,29 +28,14 @@ jobs:
           cache: npm
 
       - name: Create .env
-        env:
-          GIPHY_SECRET: ${{ secrets.REACT_APP_GIPHY_API_KEY }}
-          GIPHY_VAR: ${{ vars.REACT_APP_GIPHY_API_KEY }}
         run: |
           echo "REACT_APP_SOCKET_URL=wss://app.jedidesk.com/wss" >> .env
           echo "REACT_APP_BASE_DOMAIN_URL=https://denenergi.github.io/chat_widget" >> .env
           echo "REACT_APP_JD_DOMAIN_URL=https://app.jedidesk.com/" >> .env
           echo "REACT_APP_JD_STATUS=prod" >> .env
-          echo "REACT_APP_GIF_PROVIDER=giphy" >> .env
 
           if [ -f .env.github-pages ]; then
             cat .env.github-pages >> .env
-          fi
-
-          if [ -n "$GIPHY_SECRET" ]; then
-            echo "REACT_APP_GIPHY_API_KEY=$GIPHY_SECRET" >> .env
-          elif [ -n "$GIPHY_VAR" ]; then
-            echo "REACT_APP_GIPHY_API_KEY=$GIPHY_VAR" >> .env
-          fi
-
-          if ! grep -q "^REACT_APP_GIPHY_API_KEY=.\+" .env; then
-            echo "::error::REACT_APP_GIPHY_API_KEY is missing. Add .env.github-pages or a GitHub Actions secret/variable."
-            exit 1
           fi
 
       - name: Install dependencies
