@@ -298,6 +298,17 @@ export function Chat({
     setIsKeyBoardOpen(false);
   };
 
+  const releaseMessageInputFocus = useCallback(() => {
+    if (isMobile) {
+      inputText.current?.blur();
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    } else {
+      inputText.current?.focus();
+    }
+  }, [isMobile]);
+
   window.addEventListener("resize", () => {
     if (
       isMinHeight &&
@@ -373,9 +384,9 @@ export function Chat({
       localStorage.removeItem("closeChat");
       setMessage("");
       setIsTextTyping(false);
-      inputText.current.focus();
+      releaseMessageInputFocus();
     },
-    [socket, message]
+    [socket, message, releaseMessageInputFocus]
   );
 
   const onSendFileHandler = () => {
@@ -511,7 +522,7 @@ export function Chat({
       setShowGifPicker(false);
       setCloseChatMessage(null);
       localStorage.removeItem("closeChat");
-      inputText.current?.focus();
+      releaseMessageInputFocus();
 
       fetchGifAsMediaFile(gifUrl, payload.gif_id)
         .then((file) => {
@@ -521,7 +532,7 @@ export function Chat({
           sendMessage(payload, DATA_MESSAGES_TYPES.gif);
         });
     },
-    [socket, setMessagesList, messagesList]
+    [socket, setMessagesList, messagesList, releaseMessageInputFocus]
   );
 
   // useEffect(() => {

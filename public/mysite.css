@@ -2709,7 +2709,7 @@ ul {
   padding: 8px 12px;
   max-width: 80%;
   margin: -8px 0 10px 10px;
-  transition: all 0.5s ease;
+  transition: background 0.2s ease;
 }
 
 .add-manager-to-ai-dilog-button:hover {

@@ -420,6 +420,18 @@ const MessageItem = ({
 
   const displayMessage = { ...message, text: displayText };
 
+  const isMessageLoading =
+    loadingBeforeMessages.loading &&
+    loadingBeforeMessages.id === message.id &&
+    message.from !== "customer";
+
+  const showAddManagerButton =
+    lastAIMessageId === message.id &&
+    !chatManager &&
+    isNeedManagerButton &&
+    !isMessageLoading &&
+    !firstLoad;
+
   return (
     <div
       className={`jedidesk-chat__mesages-area-block ${
@@ -454,9 +466,7 @@ const MessageItem = ({
           ContentRenderer(displayMessage)
         )}
       </div>
-      {lastAIMessageId === message.id &&
-        !chatManager &&
-        isNeedManagerButton && (
+      {showAddManagerButton && (
           <button
             onClick={() => addManager()}
             className="add-manager-to-ai-dilog-button"
