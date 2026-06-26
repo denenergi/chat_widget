@@ -25,7 +25,7 @@ import {
 } from "../utils/iframeStyles";
 import {
   playWidgetNotificationSound,
-  unlockWidgetNotificationSound,
+  prepareWidgetNotificationSound,
 } from "../utils/widgetNotificationSound";
 import { WidgetFrameStyles } from "./WidgetFrameStyles";
 
@@ -77,6 +77,9 @@ export function ChatContainer() {
 
   useEffect(() => {
     isChatOpenRef.current = isChatOpen;
+    if (isChatOpen) {
+      prepareWidgetNotificationSound();
+    }
   }, [isChatOpen]);
   const [isChatClosing, setIsChatClosing] = useState(false);
   const [isChatOpening, setIsChatOpening] = useState(false);
@@ -1124,7 +1127,7 @@ export function ChatContainer() {
   };
 
   const openChatWithAnimation = () => {
-    unlockWidgetNotificationSound();
+    prepareWidgetNotificationSound();
     setIsChatOpening(true);
     setIsChatOpen(true);
     setCloseWelcomeMessage(false);

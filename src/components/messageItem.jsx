@@ -9,6 +9,7 @@ import { widgetColorStyle } from "../utils/utils";
 import { openFile, getFileName } from "../utils/utils";
 import { StorageService } from "../service/token/storage.service";
 import ChatMessageFileIcon from "./svg/ChatMessageFileIcon";
+import { playWidgetNotificationSound } from "../utils/widgetNotificationSound";
 
 const MessageItem = ({
   message,
@@ -70,10 +71,14 @@ const MessageItem = ({
       setFirstLoad(true);
       const timer = setTimeout(() => {
         setFirstLoad(false);
+        playWidgetNotificationSound({
+          isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
+          isChatOpen: true,
+        });
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [message.id]);
+  }, [message.id, widgetOptions.isOffVolumeWidget]);
 
   const scrollTo = (id) => {
     const queryRef = ref.current.parentElement.children;

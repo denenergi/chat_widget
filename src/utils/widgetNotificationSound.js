@@ -1,18 +1,13 @@
 import { getAssetBaseUrl } from "./assetBaseUrl";
 
 let notificationAudio = null;
-let isUnlockedByUserGesture = false;
-
-export function unlockWidgetNotificationSound() {
-  isUnlockedByUserGesture = true;
-}
 
 export function getWidgetNotificationAudio() {
   if (!notificationAudio) {
     notificationAudio = new Audio(
       `${getAssetBaseUrl()}/assets/sounds/sentmessage.mp3`
     );
-    notificationAudio.preload = "none";
+    notificationAudio.preload = "auto";
     notificationAudio.setAttribute("playsinline", "");
     notificationAudio.setAttribute("webkit-playsinline", "");
   }
@@ -20,20 +15,21 @@ export function getWidgetNotificationAudio() {
   return notificationAudio;
 }
 
+export function prepareWidgetNotificationSound() {
+  const audio = getWidgetNotificationAudio();
+  if (audio.readyState < 2) {
+    audio.load();
+  }
+}
+
 export function canPlayWidgetNotificationSound({
   isOffVolumeWidget,
-  isChatOpen,
+  isChatOpen = true,
+  playInBackground = false,
 }) {
   if (isOffVolumeWidget) return false;
-  if (!isChatOpen) return false;
-  if (!isUnlockedByUserGesture) return false;
+  if (!playInBackground && !isChatOpen) return false;
   if (typeof document !== "undefined" && document.visibilityState === "hidden") {
-    return false;
-  }
-  if (
-    typeof window !== "undefined" &&
-    window.matchMedia("(pointer: coarse)").matches
-  ) {
     return false;
   }
 
