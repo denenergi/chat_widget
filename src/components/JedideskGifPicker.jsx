@@ -9,6 +9,7 @@ export function JedideskGifPicker(props) {
         {...props}
         categoryHeight={0}
         initialSearchTerm={DEFAULT_GIF_SEARCH}
+        autoFocusSearch={false}
       />
     </div>
   );

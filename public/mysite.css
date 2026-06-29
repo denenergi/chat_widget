@@ -208,6 +208,7 @@ ul {
   -webkit-box-pack: end;
   -ms-flex-pack: end;
   justify-content: flex-end;
+  position: relative;
   /* height: 100vh; */
   height: 787px;
   background: #e3efff;
@@ -2296,10 +2297,18 @@ ul {
 }
 
 .picker-container {
-  position: relative;
-  width: 340px;
-  margin-left: 10px;
-  z-index: 2;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  margin-left: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.picker-container > * {
+  pointer-events: auto;
 }
 
 .picker-container .GifPickerReact {
@@ -2313,6 +2322,16 @@ ul {
 
 .jedidesk-gif-picker .gpr-category-list {
   display: none;
+}
+
+.jedidesk-gif-picker .gpr-search {
+  font-size: 16px;
+}
+
+@media (max-width: 750px) {
+  .picker-container .GifPickerReact {
+    max-height: 42dvh;
+  }
 }
 
 .emoji-icon,

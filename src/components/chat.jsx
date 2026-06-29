@@ -427,6 +427,12 @@ export function Chat({
 
   const toggleGifPicker = () => {
     setShowPicker(false);
+    if (!showGifPicker) {
+      inputText.current?.blur();
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }
     setShowGifPicker((val) => !val);
   };
 
