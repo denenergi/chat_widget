@@ -8,7 +8,7 @@ import ImageModal from "./imageModal";
 import BackButton from "./svg/BackButton";
 import CloseButton from "./svg/CloseButton";
 import Picker from "emoji-picker-react";
-import { GifPicker } from "../utils/gifPicker";
+import { JedideskGifPicker } from "./JedideskGifPicker";
 import {
   playWidgetNotificationSound,
   prepareWidgetNotificationSound,
@@ -1144,7 +1144,7 @@ export function Chat({
             />
           )}
           {showGifPicker && gifProvider && (
-            <GifPicker
+            <JedideskGifPicker
               provider={gifProvider}
               onGifClick={onGifClick}
               width="100%"

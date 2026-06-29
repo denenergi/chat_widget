@@ -2311,6 +2311,10 @@ ul {
   box-shadow: 0 4px 16px rgba(38, 65, 102, 0.12);
 }
 
+.jedidesk-gif-picker .gpr-category-list {
+  display: none;
+}
+
 .emoji-icon,
 .gif-icon {
   cursor: pointer;
