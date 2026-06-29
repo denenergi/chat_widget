@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useState, useRef } from "react";
 import "../App.scss";
 import {
   MESSAGES_TYPES,
@@ -38,8 +38,21 @@ const MessageItem = ({
   const [firstLoad, setFirstLoad] = useState(false);
   const [displayText, setDisplayText] = useState(message.text);
   const [isUpdated, setIsUpdated] = useState(false);
+  const [isEntering, setIsEntering] = useState(() => animateEnter);
   const ref = useRef(null);
   const welcomeAnimatedRef = useRef(false);
+
+  useLayoutEffect(() => {
+    if (animateEnter) {
+      setIsEntering(true);
+    }
+  }, [animateEnter]);
+
+  useEffect(() => {
+    if (!isEntering) return;
+    const timer = setTimeout(() => setIsEntering(false), 480);
+    return () => clearTimeout(timer);
+  }, [isEntering]);
 
   const onClickImageHandler = useCallback(
     (imageUrl) => {
@@ -468,27 +481,28 @@ const MessageItem = ({
     !isMessageLoading &&
     !firstLoad;
 
+  const isManager = message?.from === MESSAGES_TYPES.manager;
+  const enterClass = isEntering
+    ? isManager
+      ? "jedidesk-message-enter jedidesk-message-enter--manager"
+      : "jedidesk-message-enter jedidesk-message-enter--customer"
+    : "";
+
   return (
     <div
       className={`jedidesk-chat__mesages-area-block ${
-        message?.from === MESSAGES_TYPES.manager
-          ? "jedidesk-chat__mesages-area-block-manager"
-          : ""
-      } ${isUpdated ? "jedidesk-message-updated" : ""} ${
-        animateEnter ? "jedidesk-message-enter" : ""
-      }`}
+        isManager ? "jedidesk-chat__mesages-area-block-manager" : ""
+      } ${isUpdated ? "jedidesk-message-updated" : ""}`}
       id={`message-${message.id}`}
       ref={ref}
     >
       <div
         className={`jedidesk-chat__mesages-area-item ${
-          message?.from === MESSAGES_TYPES.manager
-            ? "jedidesk-chat__mesages-area-item-manager"
-            : ""
+          isManager ? "jedidesk-chat__mesages-area-item-manager" : ""
         } ${message.is_system && "jedidesk-chat__system-messages-container"} ${
           message.status === "deleted" &&
           "jedidesk-chat__system-messages-container"
-        } ${message.media_type === "audio" && "audio-message-container"}`}
+        } ${message.media_type === "audio" && "audio-message-container"} ${enterClass}`}
         title={message.time}
         style={{ background: widgetColorStyle(color).messageColor }}
       >

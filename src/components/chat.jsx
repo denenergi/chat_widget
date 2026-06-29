@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import { StorageService } from "../service/token/storage.service";
 import "../App.scss";
 import TextareaAutosize from "react-textarea-autosize";
@@ -133,8 +133,10 @@ export function Chat({
   const [lastAIMessageId, setlastAIMessageId] = useState(null);
   const [welcomeVisible, setWelcomeVisible] = useState(true);
   const [enteringMessageIds, setEnteringMessageIds] = useState(() => new Set());
+  const [sendButtonPulse, setSendButtonPulse] = useState(false);
   const headRef = useRef();
   const seenMessageIdsRef = useRef(new Set());
+  const messagesListPrevRef = useRef(messagesList);
   const isInitialMessagesRef = useRef(true);
   const isEnteringChatRef = useRef(false);
 
@@ -379,26 +381,6 @@ export function Chat({
     }
   }, [typingMessage]);
 
-  const onSendMessageHandler = useCallback(
-    (evt) => {
-      if (evt) {
-        evt.preventDefault();
-      }
-      if (message.trim() === "") {
-        return;
-      }
-
-      prepareWidgetNotificationSound();
-      sendMessage(adaptMessage(message), DATA_MESSAGES_TYPES.text);
-      setCloseChatMessage(null);
-      localStorage.removeItem("closeChat");
-      setMessage("");
-      setIsTextTyping(false);
-      releaseMessageInputFocus();
-    },
-    [socket, message, releaseMessageInputFocus]
-  );
-
   const onSendFileHandler = () => {
     const inputFilesArray = Array.from(fileInputRef.current.files);
 
@@ -513,17 +495,28 @@ export function Chat({
     });
   };
 
+  const markMessagesEntering = useCallback((ids) => {
+    setEnteringMessageIds((prev) => {
+      const next = new Set(prev);
+      ids.forEach((id) => next.add(id));
+      return next;
+    });
+  }, []);
+
   const onGifClick = useCallback(
     (gif) => {
       const payload = mapGifToPayload(gif);
       const gifText = buildGifMessageText(payload);
       const gifUrl = payload.original_url || payload.preview_url;
 
+      const localGifId = `local-gif-${Date.now()}`;
+      markMessagesEntering([localGifId]);
       if (setMessagesList) {
         setMessagesList((prev) => [
           ...prev,
           normalizeGifMessage({
-            id: `local-gif-${Date.now()}`,
+            id: localGifId,
+            localKey: localGifId,
             from: MESSAGES_TYPES.customer,
             media: null,
             media_type: null,
@@ -546,7 +539,7 @@ export function Chat({
       releaseMessageInputFocus();
       sendMessage(payload, DATA_MESSAGES_TYPES.gif);
     },
-    [setMessagesList, releaseMessageInputFocus, sendMessage]
+    [markMessagesEntering, setMessagesList, releaseMessageInputFocus, sendMessage]
   );
 
   // useEffect(() => {
@@ -571,22 +564,13 @@ export function Chat({
   useEffect(() => {
     if (!viberBotLink && !telegramBotLink) {
       setHeadHeight(120);
-    } else {
-      setHeadHeight(headRef.offsetHeight);
+    } else if (headRef?.current) {
+      setHeadHeight(headRef.current.offsetHeight);
     }
     const timeStampDate = StorageService.getStartDateTimeStamp() ?? Date.now();
     const date = formatTimestampToDate(timeStampDate, browserLanguage);
     setMessagesStartDate(date);
-  }, [headRef]);
-
-  useEffect(() => {
-    setShowCounter(true);
-    setMessageCounter(messageCounter + 1);
-    setTimeout(() => {
-      setShowCounter(false);
-      setMessageCounter(0);
-    }, 2000);
-  }, [messagesList]);
+  }, [headRef, browserLanguage, telegramBotLink, viberBotLink]);
 
   useEffect(() => {
     if (messagesListRef.current) {
@@ -609,6 +593,55 @@ export function Chat({
       block: "end",
     });
   }, []);
+
+  const onSendMessageHandler = useCallback(
+    (evt) => {
+      if (evt) {
+        evt.preventDefault();
+      }
+      if (message.trim() === "") {
+        return;
+      }
+
+      const messageText = adaptMessage(message);
+      const localId = `local-msg-${Date.now()}`;
+
+      prepareWidgetNotificationSound();
+      markMessagesEntering([localId]);
+      if (setMessagesList) {
+        setMessagesList((prev) => [
+          ...prev,
+          {
+            id: localId,
+            localKey: localId,
+            from: MESSAGES_TYPES.customer,
+            text: messageText,
+            time: formatDate(new Date()),
+            status: "sent",
+            is_system: false,
+            media: null,
+            media_type: null,
+          },
+        ]);
+      }
+
+      sendMessage(messageText, DATA_MESSAGES_TYPES.text);
+      setCloseChatMessage(null);
+      localStorage.removeItem("closeChat");
+      setMessage("");
+      setIsTextTyping(false);
+      setSendButtonPulse(true);
+      releaseMessageInputFocus();
+      requestAnimationFrame(() => scrollToBottom(false));
+    },
+    [message, markMessagesEntering, releaseMessageInputFocus, scrollToBottom, sendMessage, setMessagesList]
+  );
+
+  useEffect(() => {
+    if (!sendButtonPulse) return;
+    const timer = setTimeout(() => setSendButtonPulse(false), 320);
+    return () => clearTimeout(timer);
+  }, [sendButtonPulse]);
 
   useEffect(() => {
     if (changedEvent && changedEvent.type === "deleteMessage") {
@@ -638,21 +671,52 @@ export function Chat({
     }
   }, [changedEvent, messagesList]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const prevList = messagesListPrevRef.current;
+    messagesListPrevRef.current = messagesList;
+
     if (isInitialMessagesRef.current) {
       messagesList.forEach((msg) => seenMessageIdsRef.current.add(msg.id));
       isInitialMessagesRef.current = false;
       return;
     }
 
-    const newIds = messagesList
-      .filter((msg) => !seenMessageIdsRef.current.has(msg.id))
-      .map((msg) => msg.id);
+    messagesList.forEach((msg, idx) => {
+      const prev = prevList[idx];
+      if (
+        prev &&
+        typeof prev.id === "string" &&
+        (prev.id.startsWith("local-msg-") || prev.id.startsWith("local-gif-")) &&
+        prev.id !== msg.id &&
+        !seenMessageIdsRef.current.has(msg.id)
+      ) {
+        seenMessageIdsRef.current.add(msg.id);
+        seenMessageIdsRef.current.delete(prev.id);
+      }
+    });
 
-    if (!newIds.length) return;
+    const newMessages = messagesList.filter(
+      (msg) => !seenMessageIdsRef.current.has(msg.id)
+    );
+
+    if (!newMessages.length) return;
+
+    const newIds = newMessages.flatMap((msg) =>
+      [msg.id, msg.localKey].filter(Boolean)
+    );
 
     newIds.forEach((id) => seenMessageIdsRef.current.add(id));
     setEnteringMessageIds((prev) => new Set([...prev, ...newIds]));
+
+    const newManagerMessages = newMessages.filter(
+      (msg) => msg.from === MESSAGES_TYPES.manager && !msg.is_system
+    );
+
+    if (newManagerMessages.length && !isNearBottom()) {
+      setMessageCounter((prev) => prev + newManagerMessages.length);
+      setShowCounter(true);
+      setShowButtonScroll(true);
+    }
 
     const timer = setTimeout(() => {
       setEnteringMessageIds((prev) => {
@@ -660,10 +724,10 @@ export function Chat({
         newIds.forEach((id) => next.delete(id));
         return next;
       });
-    }, 400);
+    }, 480);
 
     return () => clearTimeout(timer);
-  }, [messagesList]);
+  }, [messagesList, isNearBottom]);
 
   useEffect(() => {
     if (isWelcomScreenOpen) return;
@@ -718,6 +782,8 @@ export function Chat({
 
   const buttonScroll = () => {
     scrollToBottom(false);
+    setShowCounter(false);
+    setMessageCounter(0);
   };
 
   useEffect(() => {
@@ -730,18 +796,17 @@ export function Chat({
   }, [messagesList, messagesList.length]);
 
   useEffect(() => {
-    let scrollTop = messagesListRef?.current?.scrollTop;
-    let scrollHeight = messagesListRef?.current?.scrollHeight;
-    let clientHeight = messagesListRef?.current?.clientHeight;
-    let count = clientHeight + scrollTop;
-    if (scrollHeight - count >= 1) {
-      if (clientHeight <= scrollHeight) {
-        setShowButtonScroll(true);
-      }
+    const list = messagesListRef?.current;
+    if (!list) return;
+
+    if (!isNearBottom() && list.clientHeight <= list.scrollHeight) {
+      setShowButtonScroll(true);
     } else {
       setShowButtonScroll(false);
+      setShowCounter(false);
+      setMessageCounter(0);
     }
-  }, [pixelsToScroll]);
+  }, [pixelsToScroll, isNearBottom]);
 
   const onDrop = useCallback(
     (acceptedFiles) => {
@@ -986,7 +1051,7 @@ export function Chat({
                 isMobile={isMobile}
                 onOpenImageModal={(imageUrl) => onOpenModalHandler(imageUrl)}
                 addManager={() => addManager()}
-                key={item.id}
+                key={item.localKey || item.id}
                 loadingBeforeMessages={loadingBeforeMessages}
                 changedEvent={changedEvent}
                 setChangedEvent={setChangedEvent}
@@ -997,7 +1062,10 @@ export function Chat({
                 setOpenImage={setOpenImage}
                 lastAIMessageId={lastAIMessageId}
                 isNeedManagerButton={isNeedManagerButton}
-                animateEnter={enteringMessageIds.has(item.id)}
+                animateEnter={
+                  enteringMessageIds.has(item.id) ||
+                  (item.localKey && enteringMessageIds.has(item.localKey))
+                }
               />
             );
           })}
@@ -1186,7 +1254,7 @@ export function Chat({
                 value={message}
                 ref={inputText}
                 onKeyDown={(evt) => {
-                  if (evt.keyCode === 13 && !evt.shiftKey && !isMobile) {
+                  if (evt.keyCode === 13 && !evt.shiftKey) {
                     onSendMessageHandler(evt);
                   }
                 }}
@@ -1221,6 +1289,7 @@ export function Chat({
                 <SendButton
                   color={color}
                   onClick={() => onSendMessageHandler()}
+                  isActive={sendButtonPulse}
                 />
               </div>
             </div>

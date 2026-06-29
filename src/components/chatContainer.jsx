@@ -1198,39 +1198,68 @@ export function ChatContainer() {
     setIsChatAction(false);
     setMessagesList((prev) => {
       let optimisticGif = null;
-      const withoutOptimisticGif = prev.filter((item) => {
+      let optimisticText = null;
+
+      prev.forEach((item) => {
         if (
           typeof item.id === "string" &&
           item.id.startsWith("local-gif-") &&
           message.from === MESSAGES_TYPES.customer
         ) {
           optimisticGif = item;
-          return false;
         }
-        return true;
+        if (
+          !optimisticText &&
+          typeof item.id === "string" &&
+          item.id.startsWith("local-msg-") &&
+          message.from === MESSAGES_TYPES.customer &&
+          !message.media_type
+        ) {
+          optimisticText = item;
+        }
       });
 
       const mergedMessage = normalizeGifMessage(
         mergeServerGifMessage(message, optimisticGif)
       );
 
-      if (
-        optimisticGif &&
-        (!extractGifUrl(mergedMessage) ||
-          mergedMessage.media_type === MEDIA_FILE_TYPES.file)
-      ) {
-        return [
-          ...withoutOptimisticGif,
-          normalizeGifMessage({
-            ...optimisticGif,
-            id: mergedMessage.id,
-            time: mergedMessage.time || optimisticGif.time,
-            status: mergedMessage.status || optimisticGif.status,
-          }),
-        ];
+      if (optimisticText) {
+        return prev.map((item) =>
+          item.id === optimisticText.id
+            ? normalizeGifMessage({
+                ...mergedMessage,
+                localKey: optimisticText.localKey || optimisticText.id,
+                text: mergedMessage.text || optimisticText.text,
+                time: mergedMessage.time || optimisticText.time,
+                status: mergedMessage.status || optimisticText.status,
+              })
+            : item
+        );
       }
 
-      return [...withoutOptimisticGif, mergedMessage];
+      if (optimisticGif) {
+        return prev.map((item) =>
+          item.id === optimisticGif.id
+            ? normalizeGifMessage(
+                extractGifUrl(mergedMessage) &&
+                  mergedMessage.media_type !== MEDIA_FILE_TYPES.file
+                  ? {
+                      ...mergedMessage,
+                      localKey: optimisticGif.localKey || optimisticGif.id,
+                    }
+                  : {
+                      ...optimisticGif,
+                      id: mergedMessage.id,
+                      localKey: optimisticGif.localKey || optimisticGif.id,
+                      time: mergedMessage.time || optimisticGif.time,
+                      status: mergedMessage.status || optimisticGif.status,
+                    }
+              )
+            : item
+        );
+      }
+
+      return [...prev, mergedMessage];
     });
   };
 

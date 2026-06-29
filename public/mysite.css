@@ -13,6 +13,8 @@
   --jd-duration-fast: 0.2s;
   --jd-duration-normal: 0.32s;
   --jd-duration-slow: 0.45s;
+  --jd-message-spring: cubic-bezier(0.34, 1.22, 0.64, 1);
+  --jd-message-duration: 0.42s;
 }
 
 @font-face {
@@ -232,35 +234,43 @@ ul {
   width: 65px;
   height: 65px;
   border-radius: 18px;
-  -webkit-transform: translateY(0);
-  -ms-transform: translateY(0);
-  transform: translateY(0);
-  -webkit-transition: -webkit-transform var(--jd-duration-fast) var(--jd-ease-out);
-  transition: -webkit-transform var(--jd-duration-fast) var(--jd-ease-out);
-  -o-transition: transform var(--jd-duration-fast) var(--jd-ease-out);
-  transition: transform var(--jd-duration-fast) var(--jd-ease-out);
-  transition: transform var(--jd-duration-fast) var(--jd-ease-out),
-    -webkit-transform var(--jd-duration-fast) var(--jd-ease-out);
+  -webkit-transform: scale(1);
+  -ms-transform: scale(1);
+  transform: scale(1);
+  -webkit-transform-origin: center center;
+  transform-origin: center center;
+  -webkit-transition: -webkit-transform 0.38s var(--jd-message-spring),
+    -webkit-filter 0.38s var(--jd-ease-out),
+    box-shadow 0.38s var(--jd-ease-out);
+  transition: -webkit-transform 0.38s var(--jd-message-spring),
+    transform 0.38s var(--jd-message-spring),
+    filter 0.38s var(--jd-ease-out),
+    box-shadow 0.38s var(--jd-ease-out);
+  -o-transition: transform 0.38s var(--jd-message-spring),
+    filter 0.38s var(--jd-ease-out),
+    box-shadow 0.38s var(--jd-ease-out);
+  box-shadow: 0 2px 10px rgba(29, 39, 54, 0.12);
 }
 .hiden-icon__wrapper-backdrop {
   position: absolute;
   background-color: #fff;
   border-radius: 18px;
-  -webkit-transform: translateY(0);
-  -ms-transform: translateY(0);
-  transform: translateY(0);
-  -webkit-transition: -webkit-transform var(--jd-duration-fast) var(--jd-ease-out);
-  transition: -webkit-transform var(--jd-duration-fast) var(--jd-ease-out);
-  -o-transition: transform var(--jd-duration-fast) var(--jd-ease-out);
-  transition: transform var(--jd-duration-fast) var(--jd-ease-out);
-  transition: transform var(--jd-duration-fast) var(--jd-ease-out),
-    -webkit-transform var(--jd-duration-fast) var(--jd-ease-out);
+  -webkit-transition: box-shadow 0.38s var(--jd-ease-out);
+  transition: box-shadow 0.38s var(--jd-ease-out);
+  -o-transition: box-shadow 0.38s var(--jd-ease-out);
 }
 
-.hiden-icon__wrapper-backdrop:hover {
-  -webkit-transform: translateY(-3px);
-  -ms-transform: translateY(-3px);
-  transform: translateY(-3px);
+.hiden-icon:not(.hiden-icon--opening):not(.hiden-icon--open):hover .hiden-icon__wrapper {
+  -webkit-transform: scale(1.05);
+  -ms-transform: scale(1.05);
+  transform: scale(1.05);
+  -webkit-filter: brightness(1.03);
+  filter: brightness(1.03);
+  box-shadow: 0 10px 28px rgba(29, 39, 54, 0.18);
+}
+
+.hiden-icon:not(.hiden-icon--opening):not(.hiden-icon--open):hover .hiden-icon__wrapper-backdrop {
+  box-shadow: 0 4px 16px rgba(29, 39, 54, 0.08);
 }
 
 .hiden-icon__carousel-viewport {
@@ -1684,34 +1694,95 @@ ul {
   align-self: flex-end;
 }
 
-.jedidesk-chat__mesages-area-block.jedidesk-message-enter {
-  -webkit-animation: jedidesk-message-in var(--jd-duration-normal) var(--jd-ease-out) both;
-  animation: jedidesk-message-in var(--jd-duration-normal) var(--jd-ease-out) both;
+.jedidesk-chat__mesages-area-item.jedidesk-message-enter--customer {
+  -webkit-animation: jedidesk-message-in-customer var(--jd-message-duration) var(--jd-message-spring) both;
+  animation: jedidesk-message-in-customer var(--jd-message-duration) var(--jd-message-spring) both;
+  -webkit-transform-origin: 100% 100%;
+  transform-origin: 100% 100%;
 }
 
-@-webkit-keyframes jedidesk-message-in {
+.jedidesk-chat__mesages-area-item.jedidesk-message-enter--manager {
+  -webkit-animation: jedidesk-message-in-manager var(--jd-message-duration) var(--jd-message-spring) both;
+  animation: jedidesk-message-in-manager var(--jd-message-duration) var(--jd-message-spring) both;
+  -webkit-transform-origin: 0% 100%;
+  transform-origin: 0% 100%;
+}
+
+@-webkit-keyframes jedidesk-message-in-customer {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(10px) scale(0.86);
+    transform: translateY(10px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes jedidesk-message-in-customer {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(10px) scale(0.86);
+    transform: translateY(10px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@-webkit-keyframes jedidesk-message-in-manager {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(10px) scale(0.86);
+    transform: translateY(10px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes jedidesk-message-in-manager {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(10px) scale(0.86);
+    transform: translateY(10px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jedidesk-chat__mesages-area-item.jedidesk-message-enter--customer,
+  .jedidesk-chat__mesages-area-item.jedidesk-message-enter--manager {
+    -webkit-animation: jedidesk-message-in-reduced 0.2s ease-out both;
+    animation: jedidesk-message-in-reduced 0.2s ease-out both;
+  }
+}
+
+@-webkit-keyframes jedidesk-message-in-reduced {
   from {
     opacity: 0;
-    -webkit-transform: translateY(8px);
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    -webkit-transform: translateY(0);
-    transform: translateY(0);
   }
 }
 
-@keyframes jedidesk-message-in {
+@keyframes jedidesk-message-in-reduced {
   from {
     opacity: 0;
-    -webkit-transform: translateY(8px);
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    -webkit-transform: translateY(0);
-    transform: translateY(0);
   }
 }
 
@@ -1939,43 +2010,34 @@ ul {
   border-color: white;
   height: 10px;
   width: 10px; */
-  transition: all 1s ease;
 }
 
-.welcom-screen__main-block-item--first:hover .arrowRight {
-  -webkit-animation: move-arrow-line 1s infinite linear;
-  animation: move-arrow-line 1s infinite linear;
+.welcom-screen__main-block-item--first .arrowRight {
+  -webkit-animation: move-arrow-line 1.2s ease-in-out infinite;
+  animation: move-arrow-line 1.2s ease-in-out infinite;
 }
 
 @-webkit-keyframes move-arrow-line {
-  0% {
-    -webkit-transform: translateX(-10px);
-    transform: translateX(-10px);
+  0%,
+  100% {
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
   }
   50% {
-    -webkit-transform: translateX(-3px);
-    transform: translateX(-3px);
-  }
-
-  100% {
-    -webkit-transform: translateX(5px);
-    transform: translateX(5px);
+    -webkit-transform: translateX(6px);
+    transform: translateX(6px);
   }
 }
 
 @keyframes move-arrow-line {
-  0% {
-    -webkit-transform: translateX(-10px);
-    transform: translateX(-10px);
+  0%,
+  100% {
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
   }
   50% {
-    -webkit-transform: translateX(-3px);
-    transform: translateX(-3px);
-  }
-
-  100% {
-    -webkit-transform: translateX(5px);
-    transform: translateX(5px);
+    -webkit-transform: translateX(6px);
+    transform: translateX(6px);
   }
 }
 
@@ -2311,6 +2373,60 @@ ul {
   cursor: pointer;
   margin-right: 20px;
   margin-left: 5px;
+  -webkit-transform: scale(1);
+  -ms-transform: scale(1);
+  transform: scale(1);
+  -webkit-transform-origin: center center;
+  transform-origin: center center;
+  -webkit-transition: -webkit-transform 0.32s var(--jd-message-spring),
+    opacity 0.32s var(--jd-ease-out);
+  transition: -webkit-transform 0.32s var(--jd-message-spring),
+    transform 0.32s var(--jd-message-spring),
+    opacity 0.32s var(--jd-ease-out);
+  -o-transition: transform 0.32s var(--jd-message-spring),
+    opacity 0.32s var(--jd-ease-out);
+}
+
+.jedidesk-chat__send-button:hover {
+  -webkit-transform: scale(1.12);
+  -ms-transform: scale(1.12);
+  transform: scale(1.12);
+  opacity: 0.92;
+}
+
+.jedidesk-chat__send-button--active {
+  -webkit-animation: jedidesk-send-pulse 0.38s var(--jd-message-spring);
+  animation: jedidesk-send-pulse 0.38s var(--jd-message-spring);
+}
+
+@-webkit-keyframes jedidesk-send-pulse {
+  0% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+  45% {
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes jedidesk-send-pulse {
+  0% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+  45% {
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
 }
 
 .picker-container {

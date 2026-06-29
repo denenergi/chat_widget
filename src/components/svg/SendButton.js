@@ -1,8 +1,13 @@
 import React from "react";
 
-const SendButton = ({ onClick, color }) => {
+const SendButton = ({ onClick, color, isActive = false }) => {
   return (
-    <div onClick={onClick} className="jedidesk-chat__send-button">
+    <div
+      onClick={onClick}
+      className={`jedidesk-chat__send-button${
+        isActive ? " jedidesk-chat__send-button--active" : ""
+      }`}
+    >
       <svg
         width={24}
         height={18}
