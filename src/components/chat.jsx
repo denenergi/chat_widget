@@ -98,6 +98,9 @@ export function Chat({
     showGif,
   } = widgetOptions;
 
+  const isFullHeight =
+    !isMobile && widgetOptions?.widgetView === "fullheight";
+
   const [isMinHeight, setIsMinHeight] = useState(false);
   const [isKeyboardOpen, setIsKeyBoardOpen] = useState(false);
   // const [message, setMessage] = useState("");
@@ -806,7 +809,12 @@ export function Chat({
   }, [isWelcomScreenOpen, welcomeVisible]);
 
   return (
-    <div className="jedidesk-chat__wraper jedidesk-screen-stack" {...getRootProps()}>
+    <div
+      className={`jedidesk-chat__wraper jedidesk-screen-stack ${
+        isFullHeight ? "jedidesk-chat__wraper--fullheight" : ""
+      }`}
+      {...getRootProps()}
+    >
       {welcomeVisible && (
         <div
           className={`jedidesk-screen-layer jedidesk-screen-layer--welcome ${
@@ -839,7 +847,7 @@ export function Chat({
           ref={headRef}
           className={`jedidesk-chat-head  ${
             isMobile ? "jedidesk-chat-head--mobile" : ""
-          }`}
+          } ${isFullHeight ? "jedidesk-chat-head--fullheight" : ""}`}
           style={{
             background: widgetColorStyle(color).mainColor,
             color: fontColor,
@@ -910,6 +918,8 @@ export function Chat({
         className={`jedidesk-chat__mesages-area ${
           isMobile
             ? "jedidesk-chat__mesages-area--mobile"
+            : isFullHeight
+            ? "jedidesk-chat__mesages-area--fullheight"
             : "jedidesk-chat__mesages-area--desktop"
         }`}
         style={{
@@ -920,7 +930,11 @@ export function Chat({
           id="block"
           ref={messagesListRef}
           className={`jedidesk-chat__mesages-area-items-list ${
-            isMobile ? "jedidesk-chat__mesages-area-items-list--mobile" : ""
+            isMobile
+              ? "jedidesk-chat__mesages-area-items-list--mobile"
+              : isFullHeight
+              ? "jedidesk-chat__mesages-area-items-list--fullheight"
+              : ""
           }`}
           style={{
             paddingTop: `${chatHeight ? chatHeight : headHeight}px`,

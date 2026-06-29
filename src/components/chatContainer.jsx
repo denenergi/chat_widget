@@ -485,6 +485,9 @@ export function ChatContainer() {
             typeOfWidget: widgetOptionsBack.typeOfWidget
               ? widgetOptionsBack.typeOfWidget
               : widgetOptions.typeOfWidget,
+            widgetView: widgetOptionsBack.widgetView
+              ? widgetOptionsBack.widgetView
+              : widgetOptions.widgetView,
             showTelephone: widgetOptionsBack.showTelephone
               ? widgetOptionsBack.showTelephone
               : widgetOptions.showTelephone,
@@ -1670,9 +1673,19 @@ export function ChatContainer() {
             widgetOptions.locationWidget === "left"
               ? "jedidesk-chat__position--open-left"
               : "jedidesk-chat__position--open-right"
+          } ${
+            widgetOptions.widgetView === "fullheight"
+              ? "jedidesk-chat__position--fullheight"
+              : ""
           }`}
         >
-          <div className="jedidesk-frame-position">
+          <div
+            className={`jedidesk-frame-position ${
+              widgetOptions.widgetView === "fullheight"
+                ? "jedidesk-frame-position--fullheight"
+                : ""
+            }`}
+          >
             <Frame
               id="jedidesk-iframe"
               ref={chatFrameRef}

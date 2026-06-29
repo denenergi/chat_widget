@@ -283,6 +283,7 @@ const widgetState = {
   languageFormName: "uk",
   locationWidget: "right",
   typeOfWidget: "compact",
+  widgetView: "fullheight",
   showMockAvatars: true,
   customWidgetStyles: "",
   showTelephone: false,

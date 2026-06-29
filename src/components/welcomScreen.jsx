@@ -24,6 +24,9 @@ export function WelcomScreen({
   const { color, fontColor, multilanguageText, widgetTextLanguage } =
     widgetOptions;
 
+  const isFullHeight =
+    !isMobile && widgetOptions?.widgetView === "fullheight";
+
   const [titleTextHeight, setTitleTextHeight] = useState(0);
   const elementRef = useRef(null);
 
@@ -47,7 +50,11 @@ export function WelcomScreen({
   }, []);
 
   return (
-    <div className="welcom-screen">
+    <div
+      className={`welcom-screen ${
+        isFullHeight ? "welcom-screen--fullheight" : ""
+      }`}
+    >
       <ReactCSSTransitionGroup
         transitionName="anti-head"
         transitionAppear={true}
@@ -113,7 +120,7 @@ export function WelcomScreen({
       <div
         className={`welcom-screen__main-block ${
           isMobile ? "welcom-screen__main-block--mobile" : ""
-        }`}
+        } ${isFullHeight ? "welcom-screen__main-block--fullheight" : ""}`}
         style={{
           background: widgetColorStyle(color).backgroundColor,
         }}

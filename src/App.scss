@@ -286,6 +286,13 @@
     min-height: 0;
   }
 
+  &--fullheight {
+    @media (min-width: 751px) {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   &--close {
     width: 100px;
     height: 100px;
@@ -650,6 +657,125 @@
   100% {
     opacity: 0;
     transform: scale(0.01, 0.1);
+  }
+}
+
+// Full-height sidebar variation (desktop)
+@media (min-width: 751px) {
+  .jedidesk-chat__position--fullheight {
+    top: 20px;
+    bottom: 20px;
+    width: 380px;
+    max-height: calc(100dvh - 40px);
+    height: auto;
+    border-radius: 16px;
+    -webkit-box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+
+    &.jedidesk-chat__position--open-left {
+      left: 20px;
+      right: auto;
+      -webkit-transform-origin: center left;
+      transform-origin: center left;
+    }
+
+    &.jedidesk-chat__position--open-right {
+      right: 20px;
+      left: auto;
+      -webkit-transform-origin: center right;
+      transform-origin: center right;
+    }
+
+    &.jedidesk-chat__position--open {
+      -webkit-filter: none;
+      filter: none;
+      -webkit-animation: none;
+      animation: none;
+    }
+
+    &.jedidesk-chat__position--open-left.jedidesk-chat__position--open {
+      -webkit-animation: jedidesk-sidebar-open-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      animation: jedidesk-sidebar-open-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+
+    &.jedidesk-chat__position--open-right.jedidesk-chat__position--open {
+      -webkit-animation: jedidesk-sidebar-open-right 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      animation: jedidesk-sidebar-open-right 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+
+    &.jedidesk-chat__position--closing {
+      &.jedidesk-chat__position--open-left {
+        -webkit-animation: jedidesk-sidebar-close-left 0.35s cubic-bezier(0.45, 0, 0.15, 1) forwards;
+        animation: jedidesk-sidebar-close-left 0.35s cubic-bezier(0.45, 0, 0.15, 1) forwards;
+      }
+
+      &.jedidesk-chat__position--open-right {
+        -webkit-animation: jedidesk-sidebar-close-right 0.35s cubic-bezier(0.45, 0, 0.15, 1) forwards;
+        animation: jedidesk-sidebar-close-right 0.35s cubic-bezier(0.45, 0, 0.15, 1) forwards;
+      }
+    }
+  }
+
+  @media (max-width: 900px) {
+    .jedidesk-chat__position--fullheight {
+      width: min(380px, calc(100vw - 40px));
+    }
+  }
+}
+
+@keyframes jedidesk-sidebar-open-right {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateX(40px);
+    transform: translateX(40px);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+}
+
+@keyframes jedidesk-sidebar-open-left {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateX(-40px);
+    transform: translateX(-40px);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+}
+
+@keyframes jedidesk-sidebar-close-right {
+  0% {
+    opacity: 1;
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+
+  100% {
+    opacity: 0;
+    -webkit-transform: translateX(40px);
+    transform: translateX(40px);
+  }
+}
+
+@keyframes jedidesk-sidebar-close-left {
+  0% {
+    opacity: 1;
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+
+  100% {
+    opacity: 0;
+    -webkit-transform: translateX(-40px);
+    transform: translateX(-40px);
   }
 }
 
