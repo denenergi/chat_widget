@@ -248,6 +248,13 @@ export function WelcomScreen({
           </div>
         </div>
 
+      </div>
+      <div
+        className="welcom-screen__footer"
+        style={{
+          background: widgetColorStyle(color).backgroundColor,
+        }}
+      >
         <Label
           isMobile={isMobile}
           isChatLabel={false}

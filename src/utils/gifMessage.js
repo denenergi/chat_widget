@@ -79,7 +79,32 @@ export const buildGifMessageText = (payload) => {
   const gifUrl = payload.original_url || payload.preview_url;
   const gifHtml = buildGifMessageHtml(payload);
   if (!gifUrl) return gifHtml;
-  return `${gifHtml}\n${gifUrl}\n<!--jedidesk-gif:${gifUrl}-->`;
+  return `${gifHtml}<!--jedidesk-gif:${gifUrl}-->`;
+};
+
+export const sanitizeGifMessageText = (text) => {
+  if (typeof text !== "string" || !text) return "";
+
+  const normalized = decodeHtmlEntitiesDeep(text);
+
+  const cleaned = normalized
+    .replace(GIF_MARKER_PATTERN, "")
+    .replace(PLAIN_GIF_URL_PATTERN, "")
+    .replace(/<img\b[^>]*\/?>/gi, "")
+    .replace(/^\s+|\s+$/g, "")
+    .replace(/\n{3,}/g, "\n\n");
+
+  return cleaned.trim();
+};
+
+export const getMessageDisplayText = (text) => {
+  if (typeof text !== "string" || !text) return text;
+
+  if (extractPlainGifUrlFromText(text) || extractImgSrcFromHtml(text)) {
+    return sanitizeGifMessageText(text);
+  }
+
+  return text;
 };
 
 const buildGifMeta = (gifUrl, description = "") => ({
@@ -109,18 +134,34 @@ export const normalizeGifMessage = (message) => {
     isBase64Image;
 
   if (shouldNormalizeMedia) {
+    const extraText = sanitizeGifMessageText(message.text);
+
     return {
       ...message,
-      text:
-        message.text && (extractImgSrcFromHtml(message.text) || extractPlainGifUrlFromText(message.text))
-          ? message.text
-          : buildGifMessageHtml({
-              original_url: gifUrl,
-              preview_url: gifUrl,
-              description: message.gif?.description,
-            }),
+      text: extraText
+        ? `${buildGifMessageHtml({
+            original_url: gifUrl,
+            preview_url: gifUrl,
+            description: message.gif?.description,
+          })}${extraText}`
+        : buildGifMessageHtml({
+            original_url: gifUrl,
+            preview_url: gifUrl,
+            description: message.gif?.description,
+          }),
       media: null,
       media_type: null,
+      gif: message.gif?.original_url
+        ? message.gif
+        : buildGifMeta(gifUrl, message.gif?.description || ""),
+    };
+  }
+
+  const sanitizedText = sanitizeGifMessageText(message.text);
+  if (sanitizedText !== message.text) {
+    return {
+      ...message,
+      text: sanitizedText,
       gif: message.gif?.original_url
         ? message.gif
         : buildGifMeta(gifUrl, message.gif?.description || ""),

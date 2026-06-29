@@ -4,7 +4,11 @@ import {
   MESSAGES_TYPES,
   MEDIA_FILE_TYPES,
 } from "../const/const";
-import { extractGifUrl, normalizeGifMessage } from "../utils/gifMessage";
+import {
+  extractGifUrl,
+  normalizeGifMessage,
+  getMessageDisplayText,
+} from "../utils/gifMessage";
 import { widgetColorStyle } from "../utils/utils";
 import { openFile, getFileName } from "../utils/utils";
 import { StorageService } from "../service/token/storage.service";
@@ -101,6 +105,35 @@ const MessageItem = ({
     (rawItem) => {
       const item = normalizeGifMessage(rawItem);
 
+      const renderReplyPreview = (replyMessage) => {
+        if (!replyMessage) return null;
+
+        const replyGifUrl = extractGifUrl(replyMessage);
+        const replyText = getMessageDisplayText(replyMessage.text);
+
+        if (replyGifUrl) {
+          return (
+            <div className="reply-text-message reply-text-message--gif">
+              <img
+                src={replyGifUrl}
+                className="reply-gif-preview"
+                alt="GIF"
+              />
+              {replyText ? (
+                <span dangerouslySetInnerHTML={{ __html: replyText }} />
+              ) : null}
+            </div>
+          );
+        }
+
+        return (
+          <p
+            className="reply-text-message"
+            dangerouslySetInnerHTML={{ __html: replyText || replyMessage.text }}
+          />
+        );
+      };
+
       if (
         item.id === loadingBeforeMessages.id &&
         loadingBeforeMessages.loading &&
@@ -187,14 +220,11 @@ const MessageItem = ({
                           .replyFrom
                       : chatManager?.name}
                   </p>
-                  <p
-                    className="reply-text-message"
-                    dangerouslySetInnerHTML={{
-                      __html: replyingMEssages.filter(
-                        (text) => text.id === item.reply_to_message_id
-                      )[0]?.text,
-                    }}
-                  ></p>
+                  {renderReplyPreview(
+                    replyingMEssages.filter(
+                      (text) => text.id === item.reply_to_message_id
+                    )[0]
+                  )}
                 </div>
               </div>
             )}
@@ -202,7 +232,9 @@ const MessageItem = ({
               className={`jedidesk-chat__mesages-area-item-text ${
                 item.is_system && "jedidesk-chat__system-messages"
               }`}
-              dangerouslySetInnerHTML={{ __html: item.text }}
+              dangerouslySetInnerHTML={{
+                __html: getMessageDisplayText(item.text),
+              }}
               style={{ whiteSpace: "pre-line" }}
             />
             {!item.is_system && (
