@@ -40,6 +40,7 @@ import { buildGifMessageText, normalizeGifMessage } from "../utils/gifMessage";
 import SmallSendButton from "./svg/SmallSendButton";
 
 const MIN_MOBILE_HEIGHT = 210;
+const SCROLL_BUTTON_SUPPRESS_MS = 900;
 
 let modalImageUrl = "";
 
@@ -137,6 +138,8 @@ export function Chat({
   const headRef = useRef();
   const seenMessageIdsRef = useRef(new Set());
   const messagesListPrevRef = useRef(messagesList);
+  const wasNearBottomBeforeMessagesUpdateRef = useRef(true);
+  const suppressScrollButtonUntilRef = useRef(0);
   const isInitialMessagesRef = useRef(true);
   const isEnteringChatRef = useRef(false);
 
@@ -162,6 +165,10 @@ export function Chat({
     if (!el) return true;
     return el.scrollHeight - el.scrollTop - el.clientHeight <= 80;
   }, []);
+
+  if (messagesListPrevRef.current !== messagesList && messagesListRef.current) {
+    wasNearBottomBeforeMessagesUpdateRef.current = isNearBottom();
+  }
 
   const onStartMessaging = () => {
     setIsWelcomScreenOpen(false);
@@ -588,6 +595,11 @@ export function Chat({
 
   const scrollToBottom = useCallback((instant = false) => {
     if (!endElement.current) return;
+    suppressScrollButtonUntilRef.current =
+      Date.now() + SCROLL_BUTTON_SUPPRESS_MS;
+    setShowButtonScroll(false);
+    setShowCounter(false);
+    setMessageCounter(0);
     endElement.current.scrollIntoView({
       behavior: instant ? "auto" : "smooth",
       block: "end",
@@ -673,6 +685,8 @@ export function Chat({
 
   useLayoutEffect(() => {
     const prevList = messagesListPrevRef.current;
+    const wasNearBottomBeforeUpdate =
+      wasNearBottomBeforeMessagesUpdateRef.current;
     messagesListPrevRef.current = messagesList;
 
     if (isInitialMessagesRef.current) {
@@ -712,7 +726,11 @@ export function Chat({
       (msg) => msg.from === MESSAGES_TYPES.manager && !msg.is_system
     );
 
-    if (newManagerMessages.length && !isNearBottom()) {
+    if (
+      newManagerMessages.length &&
+      !wasNearBottomBeforeUpdate &&
+      !isNearBottom()
+    ) {
       setMessageCounter((prev) => prev + newManagerMessages.length);
       setShowCounter(true);
       setShowButtonScroll(true);
@@ -756,7 +774,13 @@ export function Chat({
       isChatAction ||
       isEnteringChatRef.current;
 
-    if (!instant && !isNearBottom()) return;
+    if (
+      !instant &&
+      !wasNearBottomBeforeMessagesUpdateRef.current &&
+      !isNearBottom()
+    ) {
+      return;
+    }
 
     const frame = requestAnimationFrame(() => {
       scrollToBottom(instant);
@@ -798,6 +822,13 @@ export function Chat({
   useEffect(() => {
     const list = messagesListRef?.current;
     if (!list) return;
+
+    if (Date.now() < suppressScrollButtonUntilRef.current) {
+      setShowButtonScroll(false);
+      setShowCounter(false);
+      setMessageCounter(0);
+      return;
+    }
 
     if (!isNearBottom() && list.clientHeight <= list.scrollHeight) {
       setShowButtonScroll(true);
