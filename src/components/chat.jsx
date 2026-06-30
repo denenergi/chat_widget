@@ -40,7 +40,9 @@ import { buildGifMessageText, normalizeGifMessage } from "../utils/gifMessage";
 import SmallSendButton from "./svg/SmallSendButton";
 
 const MIN_MOBILE_HEIGHT = 210;
-const SCROLL_BUTTON_SUPPRESS_MS = 900;
+const SCROLL_BUTTON_SUPPRESS_MS = 1500;
+const SCROLL_BUTTON_SHOW_DELAY_MS = 1500;
+const SCROLL_BUTTON_SCROLL_SHOW_DELAY_MS = 450;
 
 let modalImageUrl = "";
 
@@ -140,6 +142,7 @@ export function Chat({
   const messagesListPrevRef = useRef(messagesList);
   const wasNearBottomBeforeMessagesUpdateRef = useRef(true);
   const suppressScrollButtonUntilRef = useRef(0);
+  const scrollButtonShowTimerRef = useRef(null);
   const isInitialMessagesRef = useRef(true);
   const isEnteringChatRef = useRef(false);
 
@@ -165,6 +168,39 @@ export function Chat({
     if (!el) return true;
     return el.scrollHeight - el.scrollTop - el.clientHeight <= 80;
   }, []);
+
+  const cancelScrollButtonShow = useCallback(() => {
+    if (scrollButtonShowTimerRef.current) {
+      clearTimeout(scrollButtonShowTimerRef.current);
+      scrollButtonShowTimerRef.current = null;
+    }
+  }, []);
+
+  const hideScrollButton = useCallback(() => {
+    cancelScrollButtonShow();
+    setShowButtonScroll(false);
+    setShowCounter(false);
+    setMessageCounter(0);
+  }, [cancelScrollButtonShow]);
+
+  const requestScrollButtonShow = useCallback(
+    ({ delay = SCROLL_BUTTON_SHOW_DELAY_MS } = {}) => {
+      cancelScrollButtonShow();
+
+      scrollButtonShowTimerRef.current = setTimeout(() => {
+        scrollButtonShowTimerRef.current = null;
+
+        if (Date.now() < suppressScrollButtonUntilRef.current) return;
+
+        const list = messagesListRef.current;
+        if (!list || list.clientHeight > list.scrollHeight) return;
+        if (isNearBottom()) return;
+
+        setShowButtonScroll(true);
+      }, delay);
+    },
+    [cancelScrollButtonShow, isNearBottom]
+  );
 
   if (messagesListPrevRef.current !== messagesList && messagesListRef.current) {
     wasNearBottomBeforeMessagesUpdateRef.current = isNearBottom();
@@ -593,18 +629,22 @@ export function Chat({
   //   }
   // }, [isWelcomScreenOpen]);
 
-  const scrollToBottom = useCallback((instant = false) => {
-    if (!endElement.current) return;
-    suppressScrollButtonUntilRef.current =
-      Date.now() + SCROLL_BUTTON_SUPPRESS_MS;
-    setShowButtonScroll(false);
-    setShowCounter(false);
-    setMessageCounter(0);
-    endElement.current.scrollIntoView({
-      behavior: instant ? "auto" : "smooth",
-      block: "end",
-    });
-  }, []);
+  const scrollToBottom = useCallback(
+    (instant = false) => {
+      if (!endElement.current) return;
+      cancelScrollButtonShow();
+      suppressScrollButtonUntilRef.current =
+        Date.now() + SCROLL_BUTTON_SUPPRESS_MS;
+      setShowButtonScroll(false);
+      setShowCounter(false);
+      setMessageCounter(0);
+      endElement.current.scrollIntoView({
+        behavior: instant ? "auto" : "smooth",
+        block: "end",
+      });
+    },
+    [cancelScrollButtonShow]
+  );
 
   const onSendMessageHandler = useCallback(
     (evt) => {
@@ -733,7 +773,7 @@ export function Chat({
     ) {
       setMessageCounter((prev) => prev + newManagerMessages.length);
       setShowCounter(true);
-      setShowButtonScroll(true);
+      requestScrollButtonShow();
     }
 
     const timer = setTimeout(() => {
@@ -745,7 +785,9 @@ export function Chat({
     }, 480);
 
     return () => clearTimeout(timer);
-  }, [messagesList, isNearBottom]);
+  }, [messagesList, isNearBottom, requestScrollButtonShow]);
+
+  useEffect(() => () => cancelScrollButtonShow(), [cancelScrollButtonShow]);
 
   useEffect(() => {
     if (isWelcomScreenOpen) return;
@@ -824,20 +866,18 @@ export function Chat({
     if (!list) return;
 
     if (Date.now() < suppressScrollButtonUntilRef.current) {
-      setShowButtonScroll(false);
-      setShowCounter(false);
-      setMessageCounter(0);
+      hideScrollButton();
       return;
     }
 
     if (!isNearBottom() && list.clientHeight <= list.scrollHeight) {
-      setShowButtonScroll(true);
+      requestScrollButtonShow({
+        delay: SCROLL_BUTTON_SCROLL_SHOW_DELAY_MS,
+      });
     } else {
-      setShowButtonScroll(false);
-      setShowCounter(false);
-      setMessageCounter(0);
+      hideScrollButton();
     }
-  }, [pixelsToScroll, isNearBottom]);
+  }, [pixelsToScroll, isNearBottom, hideScrollButton, requestScrollButtonShow]);
 
   const onDrop = useCallback(
     (acceptedFiles) => {
