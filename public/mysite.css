@@ -13,8 +13,8 @@
   --jd-duration-fast: 0.2s;
   --jd-duration-normal: 0.32s;
   --jd-duration-slow: 0.45s;
-  --jd-message-spring: cubic-bezier(0.34, 1.22, 0.64, 1);
-  --jd-message-duration: 0.42s;
+  --jd-message-spring: cubic-bezier(0.2, 1.18, 0.32, 1);
+  --jd-message-duration: 0.48s;
 }
 
 @font-face {
@@ -249,7 +249,7 @@ ul {
   -o-transition: transform 0.38s var(--jd-message-spring),
     filter 0.38s var(--jd-ease-out),
     box-shadow 0.38s var(--jd-ease-out);
-  box-shadow: 0 2px 10px rgba(29, 39, 54, 0.12);
+  box-shadow: 0 8px 24px rgba(29, 39, 54, 0.16);
 }
 .hiden-icon__wrapper-backdrop {
   position: absolute;
@@ -260,6 +260,16 @@ ul {
   -o-transition: box-shadow 0.38s var(--jd-ease-out);
 }
 
+.hiden-icon__wrapper-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  box-shadow: 0 0 0 0 rgba(67, 141, 246, 0.28);
+  -webkit-animation: jedidesk-launcher-pulse 2.6s ease-out infinite;
+  animation: jedidesk-launcher-pulse 2.6s ease-out infinite;
+}
+
 .hiden-icon:not(.hiden-icon--opening):not(.hiden-icon--open):hover .hiden-icon__wrapper {
   -webkit-transform: scale(1.05);
   -ms-transform: scale(1.05);
@@ -267,6 +277,12 @@ ul {
   -webkit-filter: brightness(1.03);
   filter: brightness(1.03);
   box-shadow: 0 10px 28px rgba(29, 39, 54, 0.18);
+}
+
+.hiden-icon:not(.hiden-icon--opening):not(.hiden-icon--open):active .hiden-icon__wrapper {
+  -webkit-transform: scale(0.94);
+  -ms-transform: scale(0.94);
+  transform: scale(0.94);
 }
 
 .hiden-icon:not(.hiden-icon--opening):not(.hiden-icon--open):hover .hiden-icon__wrapper-backdrop {
@@ -301,6 +317,12 @@ ul {
   height: 156px;
   -webkit-animation: jedidesk-launcher-carousel-up 6s linear infinite;
   animation: jedidesk-launcher-carousel-up 6s linear infinite;
+}
+
+.hiden-icon__carousel-viewport--triple .hiden-icon__carousel-track {
+  height: 208px;
+  -webkit-animation: jedidesk-launcher-carousel-triple 8s linear infinite;
+  animation: jedidesk-launcher-carousel-triple 8s linear infinite;
 }
 
 .hiden-icon__launcher-icon {
@@ -386,6 +408,120 @@ ul {
   100% {
     -webkit-transform: translate3d(0, -66.666%, 0);
     transform: translate3d(0, -66.666%, 0);
+  }
+}
+
+@-webkit-keyframes jedidesk-launcher-carousel-triple {
+  0%,
+  18% {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  25% {
+    -webkit-transform: translate3d(0, -25%, 0);
+    transform: translate3d(0, -25%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
+  }
+  25.001%,
+  43% {
+    -webkit-transform: translate3d(0, -25%, 0);
+    transform: translate3d(0, -25%, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  50% {
+    -webkit-transform: translate3d(0, -50%, 0);
+    transform: translate3d(0, -50%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
+  }
+  50.001%,
+  68% {
+    -webkit-transform: translate3d(0, -50%, 0);
+    transform: translate3d(0, -50%, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  75% {
+    -webkit-transform: translate3d(0, -75%, 0);
+    transform: translate3d(0, -75%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
+  }
+  75.001%,
+  100% {
+    -webkit-transform: translate3d(0, -75%, 0);
+    transform: translate3d(0, -75%, 0);
+  }
+}
+
+@keyframes jedidesk-launcher-carousel-triple {
+  0%,
+  18% {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  25% {
+    -webkit-transform: translate3d(0, -25%, 0);
+    transform: translate3d(0, -25%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
+  }
+  25.001%,
+  43% {
+    -webkit-transform: translate3d(0, -25%, 0);
+    transform: translate3d(0, -25%, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  50% {
+    -webkit-transform: translate3d(0, -50%, 0);
+    transform: translate3d(0, -50%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
+  }
+  50.001%,
+  68% {
+    -webkit-transform: translate3d(0, -50%, 0);
+    transform: translate3d(0, -50%, 0);
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  75% {
+    -webkit-transform: translate3d(0, -75%, 0);
+    transform: translate3d(0, -75%, 0);
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
+  }
+  75.001%,
+  100% {
+    -webkit-transform: translate3d(0, -75%, 0);
+    transform: translate3d(0, -75%, 0);
+  }
+}
+
+@-webkit-keyframes jedidesk-launcher-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(67, 141, 246, 0.26);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 16px rgba(67, 141, 246, 0);
+  }
+}
+
+@keyframes jedidesk-launcher-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(67, 141, 246, 0.26);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 16px rgba(67, 141, 246, 0);
   }
 }
 
@@ -1502,7 +1638,12 @@ ul {
   overflow-y: auto;
   height: 100%;
   margin-top: 10px;
-  transition: padding-top var(--jd-duration-normal) var(--jd-ease-out);
+  -webkit-transition: padding-top var(--jd-duration-normal) var(--jd-ease-out),
+    opacity 0.52s var(--jd-ease-out),
+    -webkit-transform 0.52s var(--jd-ease-out);
+  transition: padding-top var(--jd-duration-normal) var(--jd-ease-out),
+    opacity 0.52s var(--jd-ease-out),
+    transform 0.52s var(--jd-ease-out);
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
@@ -1510,6 +1651,76 @@ ul {
 .jedidesk-chat__mesages-area-items-list--mobile {
   margin-bottom: 0px;
   height: auto;
+}
+
+.jedidesk-chat__mesages-area-items-list--preparing {
+  opacity: 0;
+  -webkit-transform: translateY(12px);
+  transform: translateY(12px);
+  pointer-events: none;
+  scroll-behavior: auto !important;
+  -webkit-transition: none;
+  transition: none;
+}
+
+.jedidesk-chat__mesages-preparing {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  pointer-events: none;
+  -webkit-animation: jedidesk-chat-preparing-in 0.28s var(--jd-ease-out) both;
+  animation: jedidesk-chat-preparing-in 0.28s var(--jd-ease-out) both;
+}
+
+.jedidesk-chat__mesages-preparing-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(55, 56, 65, 0.1);
+  border-top-color: var(--jedidesk-spinner-color, #438df6);
+  border-radius: 50%;
+  -webkit-animation: jedidesk-spinner-spin 0.72s linear infinite;
+  animation: jedidesk-spinner-spin 0.72s linear infinite;
+}
+
+@-webkit-keyframes jedidesk-chat-preparing-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes jedidesk-chat-preparing-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes jedidesk-spinner-spin {
+  to {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes jedidesk-spinner-spin {
+  to {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
 }
 
 .reply-text {
@@ -1555,6 +1766,11 @@ ul {
   align-self: flex-end;
   position: relative;
   max-width: 80%;
+  box-shadow: 0 6px 18px rgba(38, 65, 102, 0.08);
+  -webkit-transition: box-shadow var(--jd-duration-normal) var(--jd-ease-out),
+    -webkit-transform var(--jd-duration-normal) var(--jd-ease-out);
+  transition: box-shadow var(--jd-duration-normal) var(--jd-ease-out),
+    transform var(--jd-duration-normal) var(--jd-ease-out);
 }
 
 .jedidesk-chat__mesages-file-name-container {
@@ -1711,52 +1927,96 @@ ul {
 @-webkit-keyframes jedidesk-message-in-customer {
   0% {
     opacity: 0;
-    -webkit-transform: scale(0.72);
-    transform: scale(0.72);
+    -webkit-transform: translate3d(18px, 14px, 0) scale(0.72);
+    transform: translate3d(18px, 14px, 0) scale(0.72);
+    -webkit-filter: blur(2px);
+    filter: blur(2px);
+  }
+  62% {
+    opacity: 1;
+    -webkit-transform: translate3d(-1px, -1px, 0) scale(1.025);
+    transform: translate3d(-1px, -1px, 0) scale(1.025);
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
   100% {
     opacity: 1;
-    -webkit-transform: scale(1);
-    transform: scale(1);
+    -webkit-transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
 }
 
 @keyframes jedidesk-message-in-customer {
   0% {
     opacity: 0;
-    -webkit-transform: scale(0.72);
-    transform: scale(0.72);
+    -webkit-transform: translate3d(18px, 14px, 0) scale(0.72);
+    transform: translate3d(18px, 14px, 0) scale(0.72);
+    -webkit-filter: blur(2px);
+    filter: blur(2px);
+  }
+  62% {
+    opacity: 1;
+    -webkit-transform: translate3d(-1px, -1px, 0) scale(1.025);
+    transform: translate3d(-1px, -1px, 0) scale(1.025);
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
   100% {
     opacity: 1;
-    -webkit-transform: scale(1);
-    transform: scale(1);
+    -webkit-transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
 }
 
 @-webkit-keyframes jedidesk-message-in-manager {
   0% {
     opacity: 0;
-    -webkit-transform: scale(0.72);
-    transform: scale(0.72);
+    -webkit-transform: translate3d(-18px, 14px, 0) scale(0.72);
+    transform: translate3d(-18px, 14px, 0) scale(0.72);
+    -webkit-filter: blur(2px);
+    filter: blur(2px);
+  }
+  62% {
+    opacity: 1;
+    -webkit-transform: translate3d(1px, -1px, 0) scale(1.025);
+    transform: translate3d(1px, -1px, 0) scale(1.025);
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
   100% {
     opacity: 1;
-    -webkit-transform: scale(1);
-    transform: scale(1);
+    -webkit-transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
 }
 
 @keyframes jedidesk-message-in-manager {
   0% {
     opacity: 0;
-    -webkit-transform: scale(0.72);
-    transform: scale(0.72);
+    -webkit-transform: translate3d(-18px, 14px, 0) scale(0.72);
+    transform: translate3d(-18px, 14px, 0) scale(0.72);
+    -webkit-filter: blur(2px);
+    filter: blur(2px);
+  }
+  62% {
+    opacity: 1;
+    -webkit-transform: translate3d(1px, -1px, 0) scale(1.025);
+    transform: translate3d(1px, -1px, 0) scale(1.025);
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
   100% {
     opacity: 1;
-    -webkit-transform: scale(1);
-    transform: scale(1);
+    -webkit-transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
 }
 
@@ -2368,6 +2628,20 @@ ul {
 .jedidesk-chat__form-wrapper {
   z-index: 2;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -10px 24px rgba(38, 65, 102, 0.05);
+}
+
+.jedidesk-chat__form-item-wrapper {
+  -webkit-transition: box-shadow var(--jd-duration-normal) var(--jd-ease-out),
+    -webkit-transform var(--jd-duration-normal) var(--jd-ease-out);
+  transition: box-shadow var(--jd-duration-normal) var(--jd-ease-out),
+    transform var(--jd-duration-normal) var(--jd-ease-out);
+}
+
+.jedidesk-chat__form-item-wrapper:focus-within {
+  -webkit-transform: translateY(-1px);
+  transform: translateY(-1px);
+  box-shadow: 0 -8px 22px rgba(38, 65, 102, 0.08);
 }
 
 .jedidesk-chat__send-button {
@@ -2454,6 +2728,8 @@ ul {
 
 .picker-container > * {
   pointer-events: auto;
+  -webkit-animation: jedidesk-sheet-in 0.26s var(--jd-ease-out) both;
+  animation: jedidesk-sheet-in 0.26s var(--jd-ease-out) both;
 }
 
 .picker-container .GifPickerReact {
@@ -2936,6 +3212,24 @@ ul {
   transition: opacity var(--jd-duration-normal) var(--jd-ease-out);
 }
 
+.question-backdrop-appear .close-dialog-question-container,
+.question-backdrop-enter .close-dialog-question-container {
+  opacity: 0;
+  -webkit-transform: translateY(18px) scale(0.96);
+  transform: translateY(18px) scale(0.96);
+}
+
+.question-backdrop-appear.question-backdrop-appear-active .close-dialog-question-container,
+.question-backdrop-enter.question-backdrop-enter-active .close-dialog-question-container {
+  opacity: 1;
+  -webkit-transform: translateY(0) scale(1);
+  transform: translateY(0) scale(1);
+  transition: opacity var(--jd-duration-normal) var(--jd-ease-out),
+    -webkit-transform var(--jd-duration-normal) var(--jd-ease-out);
+  transition: opacity var(--jd-duration-normal) var(--jd-ease-out),
+    transform var(--jd-duration-normal) var(--jd-ease-out);
+}
+
 .question-backdrop-enter {
   opacity: 0.01;
 }
@@ -2970,6 +3264,8 @@ ul {
   width: 70px;
   height: 30px;
   padding-left: 8px;
+  -webkit-animation: jedidesk-typing-in 0.26s var(--jd-ease-out) both;
+  animation: jedidesk-typing-in 0.26s var(--jd-ease-out) both;
 }
 
 .dot {
@@ -3028,6 +3324,58 @@ ul {
     opacity: 1;
     -webkit-transform: translateY(-4px);
     transform: translateY(-4px);
+  }
+}
+
+@-webkit-keyframes jedidesk-typing-in {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(5px) scale(0.94);
+    transform: translateY(5px) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes jedidesk-typing-in {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(5px) scale(0.94);
+    transform: translateY(5px) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@-webkit-keyframes jedidesk-sheet-in {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(18px);
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes jedidesk-sheet-in {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(18px);
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
   }
 }
 

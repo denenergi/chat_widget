@@ -43,6 +43,47 @@ const MIN_MOBILE_HEIGHT = 210;
 const SCROLL_BUTTON_SUPPRESS_MS = 1500;
 const SCROLL_BUTTON_SHOW_DELAY_MS = 1500;
 const SCROLL_BUTTON_SCROLL_SHOW_DELAY_MS = 450;
+const CHAT_OPEN_PREPARE_MIN_MS = 420;
+const CHAT_OPEN_PREPARE_MAX_MS = 2000;
+
+const isWelcomePlaceholderMessage = (message) => message?.id === 0;
+
+const hasOnlyWelcomePlaceholder = (list) =>
+  list.length === 1 && isWelcomePlaceholderMessage(list[0]);
+
+const hasReturningSession = () => StorageService.getCustomerIdTocken() !== null;
+
+const hasRealChatHistory = (list) =>
+  list.some((message) => !isWelcomePlaceholderMessage(message));
+
+const shouldShowOpenSpinner = (list) =>
+  hasRealChatHistory(list) ||
+  (hasReturningSession() && hasOnlyWelcomePlaceholder(list));
+
+const isNewChatWelcomeFlow = (list) =>
+  hasOnlyWelcomePlaceholder(list) && !hasRealChatHistory(list);
+
+const canRevealChatAfterPrepare = (list) => {
+  if (hasRealChatHistory(list)) return true;
+  if (!hasReturningSession()) return true;
+  return false;
+};
+
+const getVisibleMessages = (list, isPreparing = false) => {
+  if (
+    isPreparing &&
+    hasReturningSession() &&
+    hasOnlyWelcomePlaceholder(list)
+  ) {
+    return [];
+  }
+
+  if (hasRealChatHistory(list) && hasReturningSession()) {
+    return list.filter((message) => !isWelcomePlaceholderMessage(message));
+  }
+
+  return list;
+};
 
 let modalImageUrl = "";
 
@@ -137,6 +178,7 @@ export function Chat({
   const [welcomeVisible, setWelcomeVisible] = useState(true);
   const [enteringMessageIds, setEnteringMessageIds] = useState(() => new Set());
   const [sendButtonPulse, setSendButtonPulse] = useState(false);
+  const [isPreparingChatOpen, setIsPreparingChatOpen] = useState(false);
   const headRef = useRef();
   const seenMessageIdsRef = useRef(new Set());
   const messagesListPrevRef = useRef(messagesList);
@@ -149,6 +191,18 @@ export function Chat({
   const gifProvider = useMemo(
     () => createGifProvider(browserLanguage),
     [browserLanguage]
+  );
+  const visibleMessages = useMemo(
+    () => getVisibleMessages(messagesList, isPreparingChatOpen),
+    [messagesList, isPreparingChatOpen]
+  );
+  const isReadyToRevealChat = useMemo(
+    () => canRevealChatAfterPrepare(messagesList),
+    [messagesList]
+  );
+  const isWelcomeTypingFlow = useMemo(
+    () => isNewChatWelcomeFlow(messagesList),
+    [messagesList]
   );
   const canShowGifPicker = showGif !== false && isGifPickerConfigured();
 
@@ -207,6 +261,17 @@ export function Chat({
   }
 
   const onStartMessaging = () => {
+    isEnteringChatRef.current = true;
+    suppressScrollButtonUntilRef.current =
+      Date.now() + SCROLL_BUTTON_SUPPRESS_MS + 800;
+    messagesList.forEach((msg) => {
+      seenMessageIdsRef.current.add(msg.id);
+      if (msg.localKey) {
+        seenMessageIdsRef.current.add(msg.localKey);
+      }
+    });
+    setEnteringMessageIds(new Set());
+    setIsPreparingChatOpen(shouldShowOpenSpinner(messagesList));
     setIsWelcomScreenOpen(false);
     setTimeout(() => setWelcomeVisible(false), 320);
   };
@@ -631,20 +696,38 @@ export function Chat({
 
   const scrollToBottom = useCallback(
     (instant = false) => {
-      if (!endElement.current) return;
       cancelScrollButtonShow();
       suppressScrollButtonUntilRef.current =
         Date.now() + SCROLL_BUTTON_SUPPRESS_MS;
       setShowButtonScroll(false);
       setShowCounter(false);
       setMessageCounter(0);
-      endElement.current.scrollIntoView({
-        behavior: instant ? "auto" : "smooth",
-        block: "end",
-      });
+
+      const list = messagesListRef.current;
+      if (list && instant) {
+        list.style.scrollBehavior = "auto";
+        list.scrollTop = list.scrollHeight;
+      }
+
+      if (endElement.current) {
+        endElement.current.scrollIntoView({
+          behavior: instant ? "auto" : "smooth",
+          block: "end",
+        });
+      }
+
+      if (list && instant) {
+        list.scrollTop = list.scrollHeight;
+      }
     },
     [cancelScrollButtonShow]
   );
+
+  const finishChatPrepare = useCallback(() => {
+    scrollToBottom(true);
+    setIsPreparingChatOpen(false);
+    isEnteringChatRef.current = false;
+  }, [scrollToBottom]);
 
   const onSendMessageHandler = useCallback(
     (evt) => {
@@ -789,23 +872,59 @@ export function Chat({
 
   useEffect(() => () => cancelScrollButtonShow(), [cancelScrollButtonShow]);
 
-  useEffect(() => {
-    if (isWelcomScreenOpen) return;
+  useLayoutEffect(() => {
+    if (isWelcomScreenOpen) {
+      setIsPreparingChatOpen(false);
+      return;
+    }
 
-    isEnteringChatRef.current = true;
+    if (!isPreparingChatOpen) return;
 
-    const scroll = () => scrollToBottom(true);
-    requestAnimationFrame(scroll);
-    const timers = [100, 320, 600].map((ms) => setTimeout(scroll, ms));
-    const clearTimer = setTimeout(() => {
-      isEnteringChatRef.current = false;
-    }, 3000);
+    scrollToBottom(true);
+    const timers = [0, 50, 150, 320].map((ms) =>
+      setTimeout(() => scrollToBottom(true), ms)
+    );
 
     return () => {
       timers.forEach(clearTimeout);
-      clearTimeout(clearTimer);
     };
-  }, [isWelcomScreenOpen, scrollToBottom]);
+  }, [
+    isWelcomScreenOpen,
+    isPreparingChatOpen,
+    messagesList.length,
+    scrollToBottom,
+  ]);
+
+  useEffect(() => {
+    if (!isPreparingChatOpen) return;
+
+    const maxTimer = setTimeout(() => {
+      finishChatPrepare();
+    }, CHAT_OPEN_PREPARE_MAX_MS);
+
+    return () => clearTimeout(maxTimer);
+  }, [isPreparingChatOpen, finishChatPrepare]);
+
+  useEffect(() => {
+    if (!isPreparingChatOpen || !isReadyToRevealChat) return;
+
+    const timer = setTimeout(() => {
+      finishChatPrepare();
+    }, CHAT_OPEN_PREPARE_MIN_MS);
+
+    return () => clearTimeout(timer);
+  }, [isPreparingChatOpen, isReadyToRevealChat, finishChatPrepare]);
+
+  useEffect(() => {
+    if (!isPreparingChatOpen || !hasReturningSession()) return;
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+    socket.send(
+      JSON.stringify({
+        action: "JWGetMessages",
+      })
+    );
+  }, [isPreparingChatOpen, socket]);
 
   useEffect(() => {
     if (!endElement.current || isWelcomScreenOpen) return;
@@ -1068,6 +1187,18 @@ export function Chat({
           background: widgetColorStyle(color).backgroundColor,
         }}
       >
+        {isPreparingChatOpen && (
+          <div
+            className="jedidesk-chat__mesages-preparing"
+            aria-hidden="true"
+            aria-busy="true"
+          >
+            <div
+              className="jedidesk-chat__mesages-preparing-spinner"
+              style={{ "--jedidesk-spinner-color": color }}
+            />
+          </div>
+        )}
         <div
           id="block"
           ref={messagesListRef}
@@ -1077,10 +1208,14 @@ export function Chat({
               : isFullHeight
               ? "jedidesk-chat__mesages-area-items-list--fullheight"
               : ""
+          }${
+            isPreparingChatOpen
+              ? " jedidesk-chat__mesages-area-items-list--preparing"
+              : ""
           }`}
           style={{
             paddingTop: `${chatHeight ? chatHeight : headHeight}px`,
-            scrollBehavior: "smooth",
+            scrollBehavior: isPreparingChatOpen ? "auto" : "smooth",
           }}
         >
           <ReactCSSTransitionGroup
@@ -1112,13 +1247,13 @@ export function Chat({
           <span className="welcom-screen__head-date-start-container-text">
             {messagesStartDate}
           </span>
-          {messagesList.map((item, index) => {
+          {visibleMessages.map((item, index) => {
             return (
               <MessageItem
                 message={item}
                 color={color}
                 fontColor={fontColor}
-                isLastMessage={index === messagesList.length - 1}
+                isLastMessage={index === visibleMessages.length - 1}
                 isMobile={isMobile}
                 onOpenImageModal={(imageUrl) => onOpenModalHandler(imageUrl)}
                 addManager={() => addManager()}
@@ -1134,8 +1269,14 @@ export function Chat({
                 lastAIMessageId={lastAIMessageId}
                 isNeedManagerButton={isNeedManagerButton}
                 animateEnter={
-                  enteringMessageIds.has(item.id) ||
-                  (item.localKey && enteringMessageIds.has(item.localKey))
+                  !isPreparingChatOpen &&
+                  (enteringMessageIds.has(item.id) ||
+                    (item.localKey && enteringMessageIds.has(item.localKey)))
+                }
+                isWelcomScreenOpen={isWelcomScreenOpen}
+                isPreparingChatOpen={isPreparingChatOpen}
+                enableWelcomeTyping={
+                  item.id === 0 && isWelcomeTypingFlow
                 }
               />
             );

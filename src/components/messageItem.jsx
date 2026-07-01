@@ -11,7 +11,6 @@ import {
 } from "../utils/gifMessage";
 import { widgetColorStyle } from "../utils/utils";
 import { openFile, getFileName } from "../utils/utils";
-import { StorageService } from "../service/token/storage.service";
 import ChatMessageFileIcon from "./svg/ChatMessageFileIcon";
 import { playWidgetNotificationSound } from "../utils/widgetNotificationSound";
 
@@ -34,6 +33,9 @@ const MessageItem = ({
   addManager,
   isNeedManagerButton,
   animateEnter = false,
+  isWelcomScreenOpen = false,
+  isPreparingChatOpen = false,
+  enableWelcomeTyping = false,
 }) => {
   const [firstLoad, setFirstLoad] = useState(false);
   const [displayText, setDisplayText] = useState(message.text);
@@ -82,21 +84,40 @@ const MessageItem = ({
   }, [changedEvent, message.id, setChangedEvent]);
 
   useEffect(() => {
-    if (welcomeAnimatedRef.current) return;
-    if (StorageService.getCustomerIdTocken() === null && message.id === 0) {
-      welcomeAnimatedRef.current = true;
-      setFirstLoad(true);
-      const timer = setTimeout(() => {
+    if (message.id !== 0 || !enableWelcomeTyping) {
+      if (!enableWelcomeTyping) {
         setFirstLoad(false);
-        playWidgetNotificationSound({
-          isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
-          isChatOpen: true,
-          haptic: false,
-        });
-      }, 1500);
-      return () => clearTimeout(timer);
+      }
+      return;
     }
-  }, [message.id, widgetOptions.isOffVolumeWidget]);
+
+    if (isWelcomScreenOpen) {
+      welcomeAnimatedRef.current = false;
+      setFirstLoad(false);
+      return;
+    }
+
+    if (welcomeAnimatedRef.current || isPreparingChatOpen) return;
+
+    welcomeAnimatedRef.current = true;
+    setFirstLoad(true);
+    const timer = setTimeout(() => {
+      setFirstLoad(false);
+      playWidgetNotificationSound({
+        isOffVolumeWidget: widgetOptions.isOffVolumeWidget,
+        isChatOpen: true,
+        haptic: false,
+      });
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [
+    message.id,
+    enableWelcomeTyping,
+    isWelcomScreenOpen,
+    isPreparingChatOpen,
+    widgetOptions.isOffVolumeWidget,
+  ]);
 
   const scrollTo = (id) => {
     const queryRef = ref.current.parentElement.children;

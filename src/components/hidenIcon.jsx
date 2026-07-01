@@ -1,6 +1,7 @@
 import { widgetColorStyle } from "../utils/utils";
 import RectangleIcon from "./svg/RectangleIcon";
 import LauncherTelegramIcon from "./svg/LauncherTelegramIcon";
+import LauncherViberIcon from "./svg/LauncherViberIcon";
 
 export function HidenIcon({
   onOpen,
@@ -18,7 +19,15 @@ export function HidenIcon({
   };
 
   const { color } = widgetOptions;
-  const showTelegramAlternate = Boolean(telegramBotLink);
+  const launcherAlternates = [
+    telegramBotLink ? { key: "telegram", Icon: LauncherTelegramIcon } : null,
+    viberBotLink ? { key: "viber", Icon: LauncherViberIcon } : null,
+  ].filter(Boolean);
+  const showCarousel = launcherAlternates.length > 0;
+  const carouselClass =
+    launcherAlternates.length >= 2
+      ? "hiden-icon__carousel-viewport--triple"
+      : "hiden-icon__carousel-viewport--alternate";
 
   return (
     <div
@@ -44,22 +53,22 @@ export function HidenIcon({
         >
           <div
             className={`hiden-icon__carousel-viewport${
-              showTelegramAlternate ? " hiden-icon__carousel-viewport--alternate" : ""
+              showCarousel ? ` ${carouselClass}` : ""
             }`}
           >
             <div className="hiden-icon__carousel-track">
               <div className="hiden-icon__launcher-icon">
                 <RectangleIcon />
               </div>
-              {showTelegramAlternate && (
-                <>
-                  <div className="hiden-icon__launcher-icon">
-                    <LauncherTelegramIcon />
-                  </div>
-                  <div className="hiden-icon__launcher-icon" aria-hidden="true">
-                    <RectangleIcon idSuffix="-carousel-clone" />
-                  </div>
-                </>
+              {launcherAlternates.map(({ key, Icon }) => (
+                <div key={key} className="hiden-icon__launcher-icon">
+                  <Icon />
+                </div>
+              ))}
+              {showCarousel && (
+                <div className="hiden-icon__launcher-icon" aria-hidden="true">
+                  <RectangleIcon idSuffix="-carousel-clone" />
+                </div>
               )}
             </div>
           </div>

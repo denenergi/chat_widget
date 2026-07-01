@@ -30,7 +30,7 @@ import {
 import { WidgetFrameStyles } from "./WidgetFrameStyles";
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
-const CHAT_OPEN_MS = 450;
+const CHAT_OPEN_MS = 520;
 const CHAT_CLOSE_MS = 420;
 const CHAT_OPEN_MS_MOBILE = 720;
 const CHAT_CLOSE_MS_MOBILE = 580;
@@ -1188,10 +1188,27 @@ export function ChatContainer() {
   }, [openDocument]);
 
   const addAllMessages = (messages) => {
-    setMessagesList([
-      messagesList[0],
-      ...messages.map((message) => normalizeGifMessage(message)),
-    ]);
+    const normalized = (messages || []).map((message) =>
+      normalizeGifMessage(message)
+    );
+
+    if (normalized.length === 0) return;
+
+    setMessagesList((prev) => {
+      const welcomeMessage = prev.find((message) => message.id === 0);
+      const isReturningUser = StorageService.getCustomerIdTocken() !== null;
+
+      if (isReturningUser) {
+        return normalized.filter((message) => message.id !== 0);
+      }
+
+      if (welcomeMessage) {
+        const serverMessages = normalized.filter((message) => message.id !== 0);
+        return [welcomeMessage, ...serverMessages];
+      }
+
+      return normalized;
+    });
   };
 
   const addNewMessage = (message) => {
