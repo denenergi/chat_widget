@@ -635,15 +635,31 @@ export function Chat({
   }, [isWelcomScreenOpen, messagesList, openDocument]);
 
   useEffect(() => {
-    if (!viberBotLink && !telegramBotLink) {
-      setHeadHeight(120);
-    } else if (headRef?.current) {
-      setHeadHeight(headRef.current.offsetHeight);
-    }
+    const headElement = headRef?.current;
+    if (!headElement) return undefined;
+
+    const updateHeadHeight = () => {
+      setHeadHeight(headElement.offsetHeight);
+    };
+
+    updateHeadHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeadHeight);
+    resizeObserver.observe(headElement);
+
     const timeStampDate = StorageService.getStartDateTimeStamp() ?? Date.now();
     const date = formatTimestampToDate(timeStampDate, browserLanguage);
     setMessagesStartDate(date);
-  }, [headRef, browserLanguage, telegramBotLink, viberBotLink]);
+
+    return () => resizeObserver.disconnect();
+  }, [
+    browserLanguage,
+    chatManager,
+    ourManagers,
+    multilanguageText,
+    isWorkCompany,
+    showBack,
+  ]);
 
   useEffect(() => {
     if (messagesListRef.current) {
@@ -1177,26 +1193,17 @@ export function Chat({
           }}
         >
           <div className="chat-screen__head-content-wrapper">
-            <div className="jedidesk-chat-head_button-container">
+            <div className="jedidesk-chat__personal-info jedidesk-chat__personal-info--compact">
               <button
                 onClick={() => onBackButtonClickHandler()}
-                className="jedidesk-chat__back-button"
+                className="jedidesk-chat__back-button jedidesk-chat-head__toolbar-back"
                 style={{ pointerEvents: `${showBack ? "auto" : "none"}` }}
+                aria-label="Back"
               >
                 {showBack && (
                   <BackButton color={widgetColorStyle(color).textColor} />
                 )}
               </button>
-              {!window?.jediDeskSettings?.alwaysOpen && (
-                <button
-                  onClick={() => onClose()}
-                  className="welcom-screen__close-button"
-                >
-                  <CloseButton color={widgetColorStyle(color).textColor} />
-                </button>
-              )}
-            </div>
-            <div className="jedidesk-chat__personal-info">
               <Avatar
                 browserLanguage={browserLanguage}
                 widgetTextLanguage={widgetTextLanguage}
@@ -1231,6 +1238,15 @@ export function Chat({
                   />
                 </div>
               </div>
+              {!window?.jediDeskSettings?.alwaysOpen && (
+                <button
+                  onClick={() => onClose()}
+                  className="jedidesk-chat-head__toolbar-close"
+                  aria-label="Close"
+                >
+                  <CloseButton color={widgetColorStyle(color).textColor} />
+                </button>
+              )}
             </div>
             <div className="welcom-screen__head-decor-fon-chat"></div>
           </div>

@@ -1364,9 +1364,7 @@ export function ChatContainer() {
   }, [isChatOpen]);
 
   useEffect(() => {
-    if (!telegramBotLink && !viberBotLink) {
-      setChatHeight(120);
-    }
+    setChatHeight(0);
   }, [telegramBotLink, viberBotLink]);
 
   useEffect(() => {
