@@ -240,34 +240,22 @@ ul {
   -webkit-transform-origin: center center;
   transform-origin: center center;
   -webkit-transition: -webkit-transform 0.38s var(--jd-message-spring),
-    -webkit-filter 0.38s var(--jd-ease-out),
-    box-shadow 0.38s var(--jd-ease-out);
+    -webkit-filter 0.38s var(--jd-ease-out);
   transition: -webkit-transform 0.38s var(--jd-message-spring),
     transform 0.38s var(--jd-message-spring),
-    filter 0.38s var(--jd-ease-out),
-    box-shadow 0.38s var(--jd-ease-out);
+    filter 0.38s var(--jd-ease-out);
   -o-transition: transform 0.38s var(--jd-message-spring),
-    filter 0.38s var(--jd-ease-out),
-    box-shadow 0.38s var(--jd-ease-out);
-  box-shadow: 0 8px 24px rgba(29, 39, 54, 0.16);
+    filter 0.38s var(--jd-ease-out);
+  box-shadow: none;
 }
 .hiden-icon__wrapper-backdrop {
   position: absolute;
   background-color: #fff;
   border-radius: 18px;
-  -webkit-transition: box-shadow 0.38s var(--jd-ease-out);
-  transition: box-shadow 0.38s var(--jd-ease-out);
-  -o-transition: box-shadow 0.38s var(--jd-ease-out);
 }
 
 .hiden-icon__wrapper-backdrop::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 22px;
-  box-shadow: 0 0 0 0 rgba(67, 141, 246, 0.28);
-  -webkit-animation: jedidesk-launcher-pulse 2.6s ease-out infinite;
-  animation: jedidesk-launcher-pulse 2.6s ease-out infinite;
+  content: none;
 }
 
 .hiden-icon:not(.hiden-icon--opening):not(.hiden-icon--open):hover .hiden-icon__wrapper {
@@ -276,7 +264,7 @@ ul {
   transform: scale(1.05);
   -webkit-filter: brightness(1.03);
   filter: brightness(1.03);
-  box-shadow: 0 10px 28px rgba(29, 39, 54, 0.18);
+  box-shadow: none;
 }
 
 .hiden-icon:not(.hiden-icon--opening):not(.hiden-icon--open):active .hiden-icon__wrapper {
@@ -286,7 +274,7 @@ ul {
 }
 
 .hiden-icon:not(.hiden-icon--opening):not(.hiden-icon--open):hover .hiden-icon__wrapper-backdrop {
-  box-shadow: 0 4px 16px rgba(29, 39, 54, 0.08);
+  box-shadow: none;
 }
 
 .hiden-icon__carousel-viewport {
@@ -2070,6 +2058,11 @@ ul {
   margin-right: -1px;
   margin-left: -2px;
   cursor: pointer;
+}
+
+.jedidesk-chat__form-file-label--hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .jedidesk-chat__form-buttons {

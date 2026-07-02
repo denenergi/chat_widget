@@ -183,10 +183,13 @@ export function Chat({
   const seenMessageIdsRef = useRef(new Set());
   const messagesListPrevRef = useRef(messagesList);
   const wasNearBottomBeforeMessagesUpdateRef = useRef(true);
+  const shouldStickToBottomRef = useRef(true);
   const suppressScrollButtonUntilRef = useRef(0);
   const scrollButtonShowTimerRef = useRef(null);
+  const scrollRetryTimersRef = useRef([]);
   const isInitialMessagesRef = useRef(true);
   const isEnteringChatRef = useRef(false);
+  const formWrapperRef = useRef(null);
 
   const gifProvider = useMemo(
     () => createGifProvider(browserLanguage),
@@ -215,6 +218,7 @@ export function Chat({
 
   const handleScroll = (el) => {
     setPixelsToScroll(el.srcElement.scrollTop);
+    shouldStickToBottomRef.current = isNearBottom();
   };
 
   const isNearBottom = useCallback(() => {
@@ -611,45 +615,6 @@ export function Chat({
     });
   }, []);
 
-  const onGifClick = useCallback(
-    (gif) => {
-      const payload = mapGifToPayload(gif);
-      const gifText = buildGifMessageText(payload);
-      const gifUrl = payload.original_url || payload.preview_url;
-
-      const localGifId = `local-gif-${Date.now()}`;
-      markMessagesEntering([localGifId]);
-      if (setMessagesList) {
-        setMessagesList((prev) => [
-          ...prev,
-          normalizeGifMessage({
-            id: localGifId,
-            localKey: localGifId,
-            from: MESSAGES_TYPES.customer,
-            media: null,
-            media_type: null,
-            text: gifText,
-            gif: {
-              original_url: gifUrl,
-              preview_url: payload.preview_url,
-              description: payload.description,
-            },
-            time: formatDate(new Date()),
-            status: "sent",
-            is_system: false,
-          }),
-        ]);
-      }
-
-      setShowGifPicker(false);
-      setCloseChatMessage(null);
-      localStorage.removeItem("closeChat");
-      releaseMessageInputFocus();
-      sendMessage(payload, DATA_MESSAGES_TYPES.gif);
-    },
-    [markMessagesEntering, setMessagesList, releaseMessageInputFocus, sendMessage]
-  );
-
   // useEffect(() => {
   //   socket.send(
   //     JSON.stringify({
@@ -702,25 +667,85 @@ export function Chat({
       setShowButtonScroll(false);
       setShowCounter(false);
       setMessageCounter(0);
+      shouldStickToBottomRef.current = true;
 
       const list = messagesListRef.current;
-      if (list && instant) {
-        list.style.scrollBehavior = "auto";
-        list.scrollTop = list.scrollHeight;
-      }
+      if (!list) return;
 
-      if (endElement.current) {
-        endElement.current.scrollIntoView({
-          behavior: instant ? "auto" : "smooth",
-          block: "end",
+      list.style.scrollBehavior = instant ? "auto" : "smooth";
+      list.scrollTop = list.scrollHeight;
+
+      if (instant) {
+        requestAnimationFrame(() => {
+          if (!messagesListRef.current) return;
+          messagesListRef.current.style.scrollBehavior = "auto";
+          messagesListRef.current.scrollTop =
+            messagesListRef.current.scrollHeight;
         });
-      }
-
-      if (list && instant) {
-        list.scrollTop = list.scrollHeight;
       }
     },
     [cancelScrollButtonShow]
+  );
+
+  const scheduleScrollToBottom = useCallback(
+    (instant = true) => {
+      scrollRetryTimersRef.current.forEach(clearTimeout);
+      scrollRetryTimersRef.current = [0, 80, 200, 450, 900].map((delay) =>
+        setTimeout(() => scrollToBottom(instant), delay)
+      );
+    },
+    [scrollToBottom]
+  );
+
+  const handleMessageMediaLoad = useCallback(() => {
+    if (!shouldStickToBottomRef.current && !isNearBottom()) return;
+    scrollToBottom(true);
+  }, [isNearBottom, scrollToBottom]);
+
+  const onGifClick = useCallback(
+    (gif) => {
+      const payload = mapGifToPayload(gif);
+      const gifText = buildGifMessageText(payload);
+      const gifUrl = payload.original_url || payload.preview_url;
+
+      const localGifId = `local-gif-${Date.now()}`;
+      markMessagesEntering([localGifId]);
+      if (setMessagesList) {
+        setMessagesList((prev) => [
+          ...prev,
+          normalizeGifMessage({
+            id: localGifId,
+            localKey: localGifId,
+            from: MESSAGES_TYPES.customer,
+            media: null,
+            media_type: null,
+            text: gifText,
+            gif: {
+              original_url: gifUrl,
+              preview_url: payload.preview_url,
+              description: payload.description,
+            },
+            time: formatDate(new Date()),
+            status: "sent",
+            is_system: false,
+          }),
+        ]);
+      }
+
+      setShowGifPicker(false);
+      setCloseChatMessage(null);
+      localStorage.removeItem("closeChat");
+      releaseMessageInputFocus();
+      sendMessage(payload, DATA_MESSAGES_TYPES.gif);
+      requestAnimationFrame(() => scheduleScrollToBottom(true));
+    },
+    [
+      markMessagesEntering,
+      setMessagesList,
+      releaseMessageInputFocus,
+      sendMessage,
+      scheduleScrollToBottom,
+    ]
   );
 
   const finishChatPrepare = useCallback(() => {
@@ -872,6 +897,38 @@ export function Chat({
 
   useEffect(() => () => cancelScrollButtonShow(), [cancelScrollButtonShow]);
 
+  useEffect(
+    () => () => {
+      scrollRetryTimersRef.current.forEach(clearTimeout);
+      scrollRetryTimersRef.current = [];
+    },
+    []
+  );
+
+  useEffect(() => {
+    const list = messagesListRef.current;
+    const form = formWrapperRef.current;
+    if (!list) return undefined;
+
+    const maintainBottomOnResize = () => {
+      if (!shouldStickToBottomRef.current) return;
+      const scrollList = messagesListRef.current;
+      if (!scrollList) return;
+      scrollList.style.scrollBehavior = "auto";
+      scrollList.scrollTop = scrollList.scrollHeight;
+    };
+
+    const resizeObserver = new ResizeObserver(maintainBottomOnResize);
+    resizeObserver.observe(list);
+    Array.from(list.children).forEach((child) => resizeObserver.observe(child));
+
+    if (form) {
+      resizeObserver.observe(form);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, [isWelcomScreenOpen, visibleMessages.length]);
+
   useLayoutEffect(() => {
     if (isWelcomScreenOpen) {
       setIsPreparingChatOpen(false);
@@ -927,24 +984,23 @@ export function Chat({
   }, [isPreparingChatOpen, socket]);
 
   useEffect(() => {
-    if (!endElement.current || isWelcomScreenOpen) return;
+    if (!messagesListRef.current || isWelcomScreenOpen) return;
 
-    const instant =
+    const forceInstant =
       closeChatMessage ||
       loadingBeforeMessages.loading ||
-      isChatAction ||
       isEnteringChatRef.current;
 
-    if (
-      !instant &&
-      !wasNearBottomBeforeMessagesUpdateRef.current &&
-      !isNearBottom()
-    ) {
-      return;
-    }
+    const shouldScroll =
+      forceInstant ||
+      wasNearBottomBeforeMessagesUpdateRef.current ||
+      shouldStickToBottomRef.current ||
+      isNearBottom();
+
+    if (!shouldScroll) return;
 
     const frame = requestAnimationFrame(() => {
-      scrollToBottom(instant);
+      scrollToBottom(forceInstant);
       if (
         isEnteringChatRef.current &&
         !loadingBeforeMessages.loading &&
@@ -960,10 +1016,16 @@ export function Chat({
     loadingBeforeMessages,
     closeChatMessage,
     messagesList,
-    isChatAction,
     scrollToBottom,
     isNearBottom,
   ]);
+
+  useEffect(() => {
+    if (!isChatAction || !showAsyncLoad || isWelcomScreenOpen) return;
+    if (!shouldStickToBottomRef.current && !isNearBottom()) return;
+
+    scrollToBottom(true);
+  }, [isChatAction, showAsyncLoad, isWelcomScreenOpen, scrollToBottom, isNearBottom]);
 
   const buttonScroll = () => {
     scrollToBottom(false);
@@ -1273,6 +1335,7 @@ export function Chat({
                   (enteringMessageIds.has(item.id) ||
                     (item.localKey && enteringMessageIds.has(item.localKey)))
                 }
+                onMediaLoad={handleMessageMediaLoad}
                 isWelcomScreenOpen={isWelcomScreenOpen}
                 isPreparingChatOpen={isPreparingChatOpen}
                 enableWelcomeTyping={
@@ -1439,6 +1502,7 @@ export function Chat({
           )}
         </div>
         <div
+          ref={formWrapperRef}
           className={`jedidesk-chat__form-wrapper ${
             socket?.readyState !== 1 ? "jedidesk-chat__waiting-cursor" : ""
           }`}
@@ -1487,17 +1551,20 @@ export function Chat({
                     <GifIcon />
                   </div>
                 )}
-                {!isTextTyping && (
-                  <label className="jedidesk-chat__form-file-label">
-                    <InputFileIcon />
-                    <input
-                      ref={fileInputRef}
-                      onChange={() => onSendFileHandler()}
-                      className="jedidesk-chat__form-file-input"
-                      type="file"
-                    ></input>
-                  </label>
-                )}
+                <label
+                  className={`jedidesk-chat__form-file-label${
+                    isTextTyping ? " jedidesk-chat__form-file-label--hidden" : ""
+                  }`}
+                >
+                  <InputFileIcon />
+                  <input
+                    ref={fileInputRef}
+                    onChange={() => onSendFileHandler()}
+                    className="jedidesk-chat__form-file-input"
+                    type="file"
+                    tabIndex={isTextTyping ? -1 : 0}
+                  ></input>
+                </label>
                 <SendButton
                   color={color}
                   onClick={() => onSendMessageHandler()}

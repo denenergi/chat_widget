@@ -36,6 +36,7 @@ const MessageItem = ({
   isWelcomScreenOpen = false,
   isPreparingChatOpen = false,
   enableWelcomeTyping = false,
+  onMediaLoad,
 }) => {
   const [firstLoad, setFirstLoad] = useState(false);
   const [displayText, setDisplayText] = useState(message.text);
@@ -68,6 +69,10 @@ const MessageItem = ({
     },
     [isMobile, onOpenImageModal, setOpenImage]
   );
+
+  const handleMediaLoad = useCallback(() => {
+    onMediaLoad?.();
+  }, [onMediaLoad]);
 
   useEffect(() => {
     setDisplayText(message.text);
@@ -152,6 +157,7 @@ const MessageItem = ({
                 src={replyGifUrl}
                 className="reply-gif-preview"
                 alt="GIF"
+                onLoad={handleMediaLoad}
               />
               {replyText ? (
                 <span dangerouslySetInnerHTML={{ __html: replyText }} />
@@ -202,6 +208,7 @@ const MessageItem = ({
               src={gifUrl}
               className="jedidesk-chat__mesages-area-item-image jedidesk-chat__mesages-area-item-gif"
               alt={gifAlt}
+              onLoad={handleMediaLoad}
             />
             <div
               className={`jedidesk-chat__mesages-area-item-time-container jedidesk-chat__mesages-area-item-time-image ${
@@ -308,6 +315,7 @@ const MessageItem = ({
               src={item.media}
               className="jedidesk-chat__mesages-area-item-image"
               alt="jedidesk-chat__mesages-area-item"
+              onLoad={handleMediaLoad}
             />
             <p
               className="jedidesk-chat__mesages-area-item-text"
@@ -348,6 +356,7 @@ const MessageItem = ({
               src={item.media}
               className="jedidesk-chat__mesages-area-item-image"
               alt="jedidesk-chat__mesages-area-item"
+              onLoad={handleMediaLoad}
             />
             <div
               className={`jedidesk-chat__mesages-area-item-time-container jedidesk-chat__mesages-area-item-time-image ${
